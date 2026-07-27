@@ -35,16 +35,16 @@ export default function Home() {
       />
 
       <section className="mx-auto w-full max-w-[104rem] px-4 pb-16 pt-12 sm:px-6 lg:px-10 lg:pt-20">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:items-start lg:gap-14">
           <Reveal>
             <p className="inline-flex items-center gap-2 border border-[var(--border)] px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
               World Cup draft · 1970 — 2026
             </p>
 
-            <h1 className="mt-6 text-[2.75rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-7xl">
-              Build your
-              <span className="block text-[var(--accent)]">dream World Cup XI</span>
+            <h1 className="mt-6 text-[2.5rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-5xl xl:text-6xl 2xl:text-7xl">
+              Build your dream
+              <span className="block text-[var(--accent)]">World Cup XI</span>
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--muted)]">
