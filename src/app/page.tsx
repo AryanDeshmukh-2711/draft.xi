@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardGrid, ChecklistGrid, Prose, Section } from "@/components/content";
+import { Reveal, StaggerItem, StaggerList } from "@/components/motion";
 import { checklist, faqs, howToPlaySteps, modes, rules, strategy } from "@/content/guide";
 import { datasetStats } from "@/lib/squads";
 
@@ -7,6 +8,7 @@ const onThisPage = [
   { href: "#how-to-play", label: "How to play" },
   { href: "#rules", label: "Rules" },
   { href: "#bench", label: "The bench" },
+  { href: "#rankings", label: "Rankings" },
   { href: "#strategy", label: "Strategy" },
   { href: "#checklist", label: "Checklist" },
   { href: "#modes", label: "Modes" },
@@ -47,7 +49,7 @@ export default function Home() {
 
       <section className="mx-auto w-full max-w-[104rem] px-4 pb-16 pt-12 sm:px-6 lg:px-10 lg:pt-20">
         <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div>
+          <Reveal>
             <p className="inline-flex items-center gap-2 border border-[var(--border)] px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
               World Cup draft · 1970 — 2026
@@ -95,9 +97,9 @@ export default function Home() {
                 </div>
               ))}
             </dl>
-          </div>
+          </Reveal>
 
-          <div className="hud hud-lit hud-rule p-5">
+          <Reveal delay={0.12} className="hud hud-lit hud-rule p-5">
             <div className="flex items-center justify-between">
               <p className="eyebrow">All-time preview</p>
               <span className="clip-tag bg-[var(--accent)] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#04070d]">
@@ -105,9 +107,12 @@ export default function Home() {
               </span>
             </div>
 
-            <ul className="mt-5 divide-y divide-[var(--border)] border-y border-[var(--border)]">
+            <StaggerList
+              inView={false}
+              className="mt-5 divide-y divide-[var(--border)] border-y border-[var(--border)]"
+            >
               {previewXi.map(([number, name, position]) => (
-                <li key={`${number}-${name}`} className="flex items-center gap-3 py-2">
+                <StaggerItem key={`${number}-${name}`} className="flex items-center gap-3 py-2">
                   <span className="tnum flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)] text-[0.7rem] font-bold text-[var(--accent)]">
                     {number}
                   </span>
@@ -115,9 +120,9 @@ export default function Home() {
                   <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
                     {position}
                   </span>
-                </li>
+                </StaggerItem>
               ))}
-            </ul>
+            </StaggerList>
 
             <div className="mt-5 grid grid-cols-3 gap-1.5">
               {[
@@ -136,7 +141,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -217,6 +222,37 @@ export default function Home() {
                 body="Depth, quality, and whether you named a reserve keeper all feed a bench rating that lifts your overall score. Seven spare strikers is not depth."
               />
             </CardGrid>
+          </Section>
+
+          <Section id="rankings" eyebrow="Rankings" title="Players carry their record with them">
+            <Prose>
+              A campaign does not end when the last whistle goes. Every player who took part has their
+              record updated: appearances, results, how far the run went, and whether they started or
+              came off the bench. That record turns into ranking points and a form figure, and the form
+              shows up next to their rating the next time they turn up in a draw.
+            </Prose>
+            <CardGrid>
+              <Card
+                title="Every tournament counts"
+                body="Matches played, wins and draws, and the round you went out in all feed a player's points. A bench appearance is worth just under half a start."
+              />
+              <Card
+                title="Form you can see while drafting"
+                body="A player who keeps winning tournaments shows a green ▲ next to their rating; one who keeps going out in the group shows a red ▼. It is a reputation, not a cheat sheet."
+              />
+              <Card
+                title="Ratings stay honest"
+                body="Form changes what a player is worth to you, not what the simulation does with them. Campaigns stay reproducible and leaderboard scores stay verifiable."
+              />
+            </CardGrid>
+            <Reveal>
+              <Link
+                href="/players"
+                className="clip-btn inline-flex border border-[var(--border)] bg-white/[0.04] px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              >
+                See the player rankings
+              </Link>
+            </Reveal>
           </Section>
 
           <Section id="strategy" eyebrow="Strategy" title="Build the spine before the headline">

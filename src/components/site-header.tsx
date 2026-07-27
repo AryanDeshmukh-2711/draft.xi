@@ -4,7 +4,7 @@ const links = [
   { href: "/how-to-play", label: "How to play" },
   { href: "/rules", label: "Rules" },
   { href: "/strategy", label: "Strategy" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/players", label: "Players" },
   { href: "/leaderboard", label: "Top 100" },
 ];
 

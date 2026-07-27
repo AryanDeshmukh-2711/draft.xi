@@ -5,7 +5,8 @@ const columns = [
     title: "Play",
     links: [
       { href: "/play", label: "Draft zone" },
-      { href: "/leaderboard", label: "Top 100" },
+      { href: "/leaderboard", label: "Manager Top 100" },
+      { href: "/players", label: "Player rankings" },
     ],
   },
   {

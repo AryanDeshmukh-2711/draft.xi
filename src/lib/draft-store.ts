@@ -24,8 +24,16 @@ export function getSquadById(squadId: string) {
 
 const playerIndex = new Map(squads.flatMap((squad) => squad.players.map((player) => [player.id, player])));
 
+const playerSquadIndex = new Map(
+  squads.flatMap((squad) => squad.players.map((player) => [player.id, squad] as const)),
+);
+
 export function getPlayerById(playerId: string) {
   return playerIndex.get(playerId) ?? null;
+}
+
+export function getSquadForPlayer(playerId: string) {
+  return playerSquadIndex.get(playerId) ?? null;
 }
 
 export function getFormationById(formationId: string) {

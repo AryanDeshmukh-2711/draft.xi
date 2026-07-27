@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordTournament } from "@/lib/player-stats";
 import { simulateDraft } from "@/lib/simulation";
 import { resolveSimulationRequest, simulationRequestSchema } from "@/lib/simulation-request";
 
@@ -19,5 +20,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "The XI is not complete" }, { status: 400 });
   }
 
-  return NextResponse.json({ result: simulateDraft(resolved) });
+  const result = simulateDraft(resolved);
+  const { recorded } = await recordTournament(resolved, result);
+
+  return NextResponse.json({ result, recorded });
 }

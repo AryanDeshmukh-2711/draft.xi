@@ -34,6 +34,12 @@ with nobody to bring on wins the tournament about a fifth as often.
 role fit, bench depth, and some tournament luck. Level after 90 in a knockout goes to penalties,
 decided largely by your keeper. Fewer than four points in the group and you go home early.
 
+**And the players remember.** Every campaign updates the record of each player who took part —
+appearances, results, titles, and whether they started or came off the bench. That becomes ranking
+points on `/players`, plus a form figure (▲/▼) shown next to their rating the next time they turn up
+in a draw. Form is reputation, not a modifier: it changes what a player is worth to *you*, never what
+the simulation does with them, so campaigns stay reproducible and leaderboard scores stay verifiable.
+
 Two modes: **Classic** shows ratings, **Almanac** hides them and makes you draft on memory. Three
 styles: **Defensive**, **Balanced**, **Attacking**, which change how the campaign is weighted.
 
@@ -68,14 +74,17 @@ right host.
 
 ```
 src/
-  app/            routes, API handlers, sitemap, robots
+  app/              routes, API handlers, sitemap, robots
   components/
-    draft/        the draft zone: pitch, bench, squad board, scorecard, result
-  content/        the guide copy shared by the landing page and the content routes
+    motion.tsx      Reveal / StaggerList / CountUp animation primitives
+    draft/          the draft zone: phase bar, squad board, pitch, bench,
+                    scorecard, result panel
+  content/          the guide copy shared by the landing page and content routes
   lib/
-    squads.ts     the dataset
-    formations.ts formations as x/y slot coordinates, plus the bench slots
-    simulation.ts the campaign model
+    squads.ts       the dataset
+    formations.ts   formations as x/y slot coordinates, plus the bench slots
+    simulation.ts   the campaign model
+    player-stats.ts the per-player record that feeds /players
 ```
 
 A few things worth knowing before you change anything:
@@ -94,6 +103,15 @@ what makes a result replayable and a leaderboard score verifiable.
 **Scores are never trusted from the browser.** The client sends player ids; the server resolves them
 back to real dataset entries, rejects anything invented, and recomputes the campaign itself. The
 leaderboard re-simulates every submission before storing it, and throttles per client.
+
+**Recording a campaign is idempotent.** `player-stats.ts` derives a run id from the picks, formation,
+style and seed, so re-simulating the same draft — a refresh, a double click — cannot inflate anyone's
+ranking.
+
+**Animation must never gate content.** `AnimatePresence mode="wait"` is deliberately avoided in the
+draft: a backgrounded tab stops firing animation frames, and waiting on an exit animation would leave
+the board stuck. For the same reason `CountUp` starts at its target value and is only wound back to
+animate, so an interrupted count still leaves the correct number on screen.
 
 State lives in a small file-backed store under `data/` by default. There is a Drizzle schema and seed
 script in `src/lib/db/` and `scripts/` for when you want Postgres behind it instead.

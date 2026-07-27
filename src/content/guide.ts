@@ -138,6 +138,11 @@ export const faqs = [
       "No. Classic mode shows player strength and positions. Almanac mode hides ratings for fans who want to draft from memory, instinct, and knowledge of the era.",
   },
   {
+    question: "Do players change over time?",
+    answer:
+      "Yes. Every campaign updates the record of each player who took part — appearances, results, and how far the run went. That becomes ranking points and a form figure shown next to their rating when they next appear in a draw. Form changes what a player is worth to you, not what the simulation does with them, so results stay reproducible.",
+  },
+  {
     question: "Can I share my result?",
     answer:
       "Yes. After the simulation you can copy a result card with your XI, the campaign record, and the score profile, or submit the run to the Top 100.",

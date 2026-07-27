@@ -1,8 +1,12 @@
 "use client";
 
+import { motion } from "motion/react";
+import { CountUp } from "@/components/motion";
 import type { DraftResult, Formation } from "@/lib/types";
 import type { PickMap } from "./draft-types";
 import { surnameOf } from "./draft-types";
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 type ResultPanelProps = {
   result: DraftResult;
@@ -36,21 +40,36 @@ export function ResultPanel({
   onPlayAgain,
 }: ResultPanelProps) {
   return (
-    <section className="hud hud-lit hud-rule p-5 sm:p-6">
+    <motion.section
+      className="hud hud-lit hud-rule p-5 sm:p-6"
+      initial={{ opacity: 0, y: 26 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease }}
+    >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Campaign result</p>
-          <h2 className="display mt-2 text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
+          <motion.h2
+            className="display mt-2 text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease, delay: 0.1 }}
+          >
             {result.headline}
-          </h2>
+          </motion.h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">{result.summary}</p>
         </div>
-        <div className="text-right">
+        <motion.div
+          className="text-right"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.15 }}
+        >
           <p className="eyebrow">Overall</p>
           <p className="tnum display text-6xl font-bold leading-none text-[var(--accent)]">
-            {result.overall}
+            <CountUp value={result.overall} duration={1.1} />
           </p>
-        </div>
+        </motion.div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-1.5 sm:grid-cols-5">
@@ -62,13 +81,16 @@ export function ResultPanel({
       </div>
 
       <ol className="mt-6 space-y-1.5">
-        {result.matches.map((match) => {
+        {result.matches.map((match, index) => {
           const style = outcomeStyle[match.outcome];
           return (
-            <li
+            <motion.li
               key={match.round}
               className="clip-btn flex items-center gap-3 border border-[var(--border)] bg-white/[0.03] px-3 py-2.5"
               style={{ borderLeft: `2px solid ${style.bar}` }}
+              initial={{ opacity: 0, x: -18 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.45, ease, delay: 0.25 + index * 0.12 }}
             >
               <div className="min-w-0 flex-1">
                 <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -79,10 +101,20 @@ export function ResultPanel({
                   <p className="mt-0.5 truncate text-xs text-[var(--amber)]">↔ {match.substitution}</p>
                 ) : null}
               </div>
-              <span className={`tnum display shrink-0 text-2xl font-bold ${style.text}`}>
+              <motion.span
+                className={`tnum display shrink-0 text-2xl font-bold ${style.text}`}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 20,
+                  delay: 0.35 + index * 0.12,
+                }}
+              >
                 {match.scoreFor}–{match.scoreAgainst}
-              </span>
-            </li>
+              </motion.span>
+            </motion.li>
           );
         })}
       </ol>
@@ -132,7 +164,7 @@ export function ResultPanel({
       </div>
 
       {message ? <p className="mt-3 text-sm text-[var(--accent)]">{message}</p> : null}
-    </section>
+    </motion.section>
   );
 }
 
@@ -151,7 +183,7 @@ function Stat({
         {label}
       </div>
       <div className="tnum display mt-0.5 text-2xl font-bold" style={{ color }}>
-        {value}
+        {typeof value === "number" ? <CountUp value={value} /> : value}
       </div>
     </div>
   );

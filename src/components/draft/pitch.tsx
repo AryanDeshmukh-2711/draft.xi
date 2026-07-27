@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import type { Formation } from "@/lib/types";
 import type { PickMap, SlotTarget } from "./draft-types";
 import { surnameOf } from "./draft-types";
@@ -40,18 +41,24 @@ export function Pitch({
         const isEligible = eligibleSlotIds.has(slot.id);
 
         return (
-          <button
+          <motion.button
             key={slot.id}
             type="button"
             onClick={() => onSelectSlot(slot.id)}
             aria-label={`${slot.position} slot${pick ? `, ${pick.player.name}` : ", open"}`}
             aria-pressed={isTarget}
+            layout
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.94 }}
             style={{ left: `${slot.x}%`, bottom: `${slot.y}%` }}
             className="absolute z-10 flex w-[19%] min-w-[54px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-1 px-0.5 py-1 text-center outline-none"
           >
             <span
-              className={`relative flex h-10 w-10 items-center justify-center rounded-full border text-[0.72rem] font-bold transition sm:h-12 sm:w-12 sm:text-sm ${
-                isTarget ? "slot-active" : ""
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full border text-[0.72rem] font-bold transition-colors sm:h-12 sm:w-12 sm:text-sm ${
+                isTarget && !pick ? "slot-active" : ""
               } ${
                 pick
                   ? "border-[var(--accent)] bg-[rgba(0,224,138,0.16)] text-white shadow-[0_0_18px_-4px_var(--accent)]"
@@ -62,7 +69,18 @@ export function Pitch({
                       : "border-dashed border-white/25 bg-black/40 text-white/45"
               }`}
             >
-              <span className="tnum">{pick ? pick.player.number : slot.position}</span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={pick ? pick.player.id : "open"}
+                  className="tnum"
+                  initial={{ opacity: 0, scale: 0.4 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.4 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                >
+                  {pick ? pick.player.number : slot.position}
+                </motion.span>
+              </AnimatePresence>
             </span>
 
             <span
@@ -70,16 +88,23 @@ export function Pitch({
                 pick ? "text-white" : "text-white/40"
               }`}
             >
-              {pick ? surnameOf(pick.player.name) : slot.position}
+              {pick ? surnameOf(pick.player.name) : "Open"}
             </span>
 
-            {pick ? (
-              <span className="flex items-center gap-1 text-[0.55rem] font-semibold text-[var(--accent)] sm:text-[0.62rem]">
-                <span>{pick.squad.flag}</span>
-                <span className="tnum">{showRatings ? pick.player.rating : pick.squad.year}</span>
-              </span>
-            ) : null}
-          </button>
+            <AnimatePresence>
+              {pick ? (
+                <motion.span
+                  className="flex items-center gap-1 text-[0.55rem] font-semibold text-[var(--accent)] sm:text-[0.62rem]"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <span>{pick.squad.flag}</span>
+                  <span className="tnum">{showRatings ? pick.player.rating : pick.squad.year}</span>
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+          </motion.button>
         );
       })}
     </div>
@@ -89,7 +114,6 @@ export function Pitch({
 function Turf() {
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden>
-      {/* mown stripes */}
       <div
         className="absolute inset-0 opacity-60"
         style={{

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { isPlayerEligibleForBench, isPlayerEligibleForSlot } from "@/lib/draft-utils";
 import { rateSquad } from "@/lib/simulation";
 import type {
@@ -13,6 +14,7 @@ import type {
   Squad,
 } from "@/lib/types";
 import { BenchStrip } from "./bench-strip";
+import { PhaseBar, type Phase } from "./phase-bar";
 import { Pitch } from "./pitch";
 import { ResultPanel } from "./result-panel";
 import { Scorecard } from "./scorecard";
@@ -50,6 +52,7 @@ function toMeta(squad: Squad): SquadMeta {
 
 export function DraftGame() {
   const [setup, setSetup] = useState<SetupResponse | null>(null);
+  const [formMap, setFormMap] = useState<Record<string, number>>({});
 
   const [formationId, setFormationId] = useState("4-3-3");
   const [style, setStyle] = useState<DraftStyle>("balanced");
@@ -67,6 +70,7 @@ export function DraftGame() {
   const [nickname, setNickname] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [lastPick, setLastPick] = useState<{ name: string; slot: string; id: number } | null>(null);
 
   // Not rendered, so they stay out of state and off the server render path.
   const sessionIdRef = useRef<string | null>(null);
@@ -89,16 +93,32 @@ export function DraftGame() {
     return seedRef.current;
   }, []);
 
+  const loadForm = useCallback(async () => {
+    const response = await fetch("/api/players?view=form");
+    if (!response.ok) return;
+    const data = (await response.json()) as { form: Record<string, number> };
+    setFormMap(data.form ?? {});
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const response = await fetch("/api/formations");
-      if (!response.ok) return;
-      const data = (await response.json()) as SetupResponse;
+      const [setupResponse, formResponse] = await Promise.all([
+        fetch("/api/formations"),
+        fetch("/api/players?view=form"),
+      ]);
+      if (cancelled || !setupResponse.ok) return;
+
+      const data = (await setupResponse.json()) as SetupResponse;
       if (cancelled) return;
       setSetup(data);
       setTarget({ kind: "xi", slotId: data.formations[0].slots[0].id });
+
+      if (formResponse.ok) {
+        const form = (await formResponse.json()) as { form: Record<string, number> };
+        if (!cancelled) setFormMap(form.form ?? {});
+      }
     }
 
     load();
@@ -106,6 +126,12 @@ export function DraftGame() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!lastPick) return;
+    const timer = window.setTimeout(() => setLastPick(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [lastPick]);
 
   const formation = useMemo(
     () => setup?.formations.find((item) => item.id === formationId) ?? setup?.formations[0] ?? null,
@@ -120,7 +146,9 @@ export function DraftGame() {
     return ids;
   }, [xi, bench]);
 
-  const xiComplete = Boolean(formation) && formation!.slots.every((slot) => xi[slot.id]);
+  const xiFilled = formation ? formation.slots.filter((slot) => xi[slot.id]).length : 0;
+  const benchFilled = benchSlots.filter((slot) => bench[slot.id]).length;
+  const xiComplete = Boolean(formation) && xiFilled === formation!.slots.length;
 
   const ratings = useMemo(() => {
     const empty = { attack: 0, defense: 0, balance: 0, overall: 0 };
@@ -205,6 +233,11 @@ export function DraftGame() {
       return;
     }
 
+    const label =
+      destination.kind === "xi"
+        ? formation.slots.find((slot) => slot.id === destination.slotId)!.position
+        : (benchSlots.find((slot) => slot.id === destination.slotId)?.role ?? "BENCH");
+
     const pick = { player, squad: toMeta(squad) };
     if (destination.kind === "xi") {
       setXi((current) => ({ ...current, [destination.slotId]: pick }));
@@ -215,6 +248,7 @@ export function DraftGame() {
     // One draw, one squad, one player: the market closes after a pick.
     setSquad(null);
     setMessage("");
+    setLastPick({ name: player.name, slot: label, id: Date.now() });
 
     const nextOpen = formation.slots.find((slot) => !xi[slot.id] && slot.id !== destination.slotId);
     if (nextOpen) {
@@ -283,6 +317,8 @@ export function DraftGame() {
         return;
       }
       setResult(data.result);
+      // The campaign just went into every player's record — refresh their form.
+      loadForm();
     } finally {
       setBusy(false);
     }
@@ -336,6 +372,31 @@ export function DraftGame() {
   const showRatings = mode === "classic";
   const activeStyle = styles.find((item) => item.id === style)!;
   const activeMode = modes.find((item) => item.id === mode)!;
+
+  const phase: Phase = result
+    ? "result"
+    : xiComplete
+      ? "kickoff"
+      : xiFilled > 0 || squad
+        ? "drafting"
+        : "setup";
+
+  const targetSlot =
+    target?.kind === "xi"
+      ? formation.slots.find((slot) => slot.id === target.slotId)?.position
+      : benchSlots.find((slot) => slot.id === target?.slotId)?.label;
+
+  const prompt = result
+    ? "Campaign complete. Submit it to the Top 100, or draft again."
+    : xiComplete
+      ? squad
+        ? "Take a substitute from this squad, or kick off with the bench you have."
+        : "The XI is complete. Roll again to fill the bench, or kick off now."
+      : squad
+        ? `Take one player from ${squad.nation} ${squad.year}${targetSlot ? ` — ${targetSlot} is next` : ""}.`
+        : xiFilled > 0
+          ? `Roll again for your next pick${targetSlot ? ` — ${targetSlot} is still open` : ""}.`
+          : "Choose a shape, a style and a mode, then roll your first squad.";
 
   const eligibleXiSlots = new Set<string>();
   const eligibleBenchSlots = new Set<string>();
@@ -391,6 +452,16 @@ export function DraftGame() {
         </Control>
       </section>
 
+      <PhaseBar
+        phase={phase}
+        xiFilled={xiFilled}
+        xiTotal={formation.slots.length}
+        benchFilled={benchFilled}
+        benchTotal={benchSlots.length}
+        rerollsLeft={rerollsLeft}
+        prompt={prompt}
+      />
+
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr_20rem]">
         <div className="space-y-4">
           <SquadBoard
@@ -398,39 +469,52 @@ export function DraftGame() {
             rerollsLeft={rerollsLeft}
             rolling={rolling}
             showRatings={showRatings}
+            formMap={formMap}
             isPlayerAvailable={isPlayerAvailable}
             onRoll={() => draw("new")}
             onReroll={draw}
             onPick={pickPlayer}
           />
 
-          {xiComplete && !result ? (
-            <div className="hud hud-lit space-y-3 p-4">
-              <p className="text-sm leading-6 text-white">
-                The XI is complete. Keep rolling to fill the bench, or send them out now.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={simulate}
-                  disabled={busy}
-                  className="clip-btn display glow bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#04070d] transition hover:brightness-110 disabled:opacity-50"
-                >
-                  {busy ? "Simulating…" : "Kick off the campaign"}
-                </button>
-                {!squad ? (
-                  <button
+          <AnimatePresence>
+            {xiComplete && !result ? (
+              <motion.div
+                className="hud hud-lit space-y-3 p-4"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <p className="text-sm leading-6 text-white">
+                  Eleven named. Every extra roll from here goes to the bench.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <motion.button
                     type="button"
-                    onClick={() => draw("new")}
-                    disabled={rolling}
-                    className="clip-btn border border-[var(--border)] bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    onClick={simulate}
+                    disabled={busy}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="clip-btn display glow bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#04070d] disabled:opacity-50"
                   >
-                    Roll for the bench 🎲
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
+                    {busy ? "Simulating…" : "Kick off the campaign"}
+                  </motion.button>
+                  {!squad ? (
+                    <motion.button
+                      type="button"
+                      onClick={() => draw("new")}
+                      disabled={rolling}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="clip-btn border border-[var(--border)] bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    >
+                      Roll for the bench 🎲
+                    </motion.button>
+                  ) : null}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
           {message && !result ? (
             <p className="text-sm text-[var(--amber)]">{message}</p>
@@ -484,6 +568,33 @@ export function DraftGame() {
           onPlayAgain={() => resetDraft()}
         />
       ) : null}
+
+      <PickToast pick={lastPick} />
+    </div>
+  );
+}
+
+function PickToast({ pick }: { pick: { name: string; slot: string; id: number } | null }) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
+      <AnimatePresence>
+        {pick ? (
+          <motion.div
+            key={pick.id}
+            className="clip-btn flex items-center gap-3 border border-[var(--accent)] bg-[rgba(4,7,13,0.94)] px-5 py-3 shadow-[0_0_40px_-10px_var(--accent)] backdrop-blur"
+            initial={{ opacity: 0, y: 24, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 340, damping: 26 }}
+          >
+            <span className="text-sm font-bold text-white">{pick.name}</span>
+            <span className="text-[var(--accent)]">→</span>
+            <span className="clip-tag bg-[var(--accent)] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#04070d]">
+              {pick.slot}
+            </span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
@@ -508,17 +619,19 @@ function Control({
 
 function Chip({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`clip-btn px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] transition ${
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.95 }}
+      className={`clip-btn px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] transition-colors ${
         active
           ? "bg-[var(--accent)] text-[#04070d]"
           : "border border-[var(--border)] bg-white/[0.04] text-white hover:border-[var(--accent)] hover:text-[var(--accent)]"
       }`}
     >
       {label}
-    </button>
+    </motion.button>
   );
 }

@@ -10,6 +10,7 @@ const routes: Array<{ path: string; priority: number; changeFrequency: "weekly" 
   { path: "/strategy", priority: 0.7, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.6, changeFrequency: "monthly" },
   { path: "/leaderboard", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/players", priority: 0.6, changeFrequency: "weekly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
