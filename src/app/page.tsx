@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardGrid, ChecklistGrid, Prose, Section } from "@/components/content";
-import { Reveal, StaggerItem, StaggerList } from "@/components/motion";
+import { HomePitch } from "@/components/home-pitch";
+import { Reveal } from "@/components/motion";
 import { checklist, faqs, howToPlaySteps, modes, rules, strategy } from "@/content/guide";
 import { datasetStats } from "@/lib/squads";
 
@@ -13,20 +14,6 @@ const onThisPage = [
   { href: "#checklist", label: "Checklist" },
   { href: "#modes", label: "Modes" },
   { href: "#faq", label: "FAQ" },
-];
-
-const previewXi = [
-  ["1", "Neuer", "GK"],
-  ["4", "C. Alberto", "RB"],
-  ["5", "Beckenbauer", "CB"],
-  ["6", "Moore", "CB"],
-  ["6", "R. Carlos", "LB"],
-  ["8", "Gérson", "CM"],
-  ["10", "Maradona", "CM"],
-  ["10", "Pelé", "CAM"],
-  ["7", "Cruyff", "RW"],
-  ["9", "Ronaldo", "ST"],
-  ["10", "Messi", "LW"],
 ];
 
 const faqJsonLd = {
@@ -107,24 +94,11 @@ export default function Home() {
               </span>
             </div>
 
-            <StaggerList
-              inView={false}
-              className="mt-5 divide-y divide-[var(--border)] border-y border-[var(--border)]"
-            >
-              {previewXi.map(([number, name, position]) => (
-                <StaggerItem key={`${number}-${name}`} className="flex items-center gap-3 py-2">
-                  <span className="tnum flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)] text-[0.7rem] font-bold text-[var(--accent)]">
-                    {number}
-                  </span>
-                  <span className="flex-1 truncate text-sm font-semibold text-white">{name}</span>
-                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                    {position}
-                  </span>
-                </StaggerItem>
-              ))}
-            </StaggerList>
+            <div className="mt-4">
+              <HomePitch />
+            </div>
 
-            <div className="mt-5 grid grid-cols-3 gap-1.5">
+            <div className="mt-4 grid grid-cols-3 gap-1.5">
               {[
                 ["Modes", "Classic · Almanac"],
                 ["Styles", "Def · Bal · Att"],
