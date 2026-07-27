@@ -22,10 +22,10 @@ async function main() {
     for (const squad of squadSeed) {
       const [nation] = await db
         .insert(schema.nations)
-        .values({ name: squad.nation, code: squad.code })
+        .values({ name: squad.nation, code: squad.code, flag: squad.flag })
         .onConflictDoUpdate({
           target: schema.nations.code,
-          set: { name: squad.nation },
+          set: { name: squad.nation, flag: squad.flag },
         })
         .returning({ id: schema.nations.id, code: schema.nations.code });
 
@@ -49,12 +49,15 @@ async function main() {
         .values({
           nationId,
           tournamentYear: squad.year,
-          meta: { nation: squad.nation, code: squad.code },
+          meta: { nation: squad.nation, code: squad.code, flag: squad.flag, externalId: squad.id },
           datasetVersion: DATASET_VERSION,
         })
         .onConflictDoUpdate({
           target: [schema.squads.nationId, schema.squads.tournamentYear],
-          set: { meta: { nation: squad.nation, code: squad.code }, datasetVersion: DATASET_VERSION },
+          set: {
+            meta: { nation: squad.nation, code: squad.code, flag: squad.flag, externalId: squad.id },
+            datasetVersion: DATASET_VERSION,
+          },
         })
         .returning({ id: schema.squads.id });
 
@@ -65,8 +68,11 @@ async function main() {
       for (const player of squad.players) {
         await db.insert(schema.players).values({
           squadId: insertedSquad.id,
+          externalId: player.id,
+          shirtNumber: player.number,
           name: player.name,
-          position: player.position,
+          position: player.positions[0],
+          positions: player.positions,
           rating: player.rating,
           attack: player.attack,
           defense: player.defense,

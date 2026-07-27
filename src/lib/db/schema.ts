@@ -1,4 +1,5 @@
 import {
+  boolean,
   pgEnum,
   pgTable,
   text,
@@ -28,10 +29,13 @@ export const positionEnum = pgEnum("position_enum", [
 
 export const modeEnum = pgEnum("draft_mode_enum", ["classic", "almanac"]);
 
+export const styleEnum = pgEnum("draft_style_enum", ["defensive", "balanced", "attacking"]);
+
 export const nations = pgTable("nations", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   code: text("code").notNull(),
+  flag: text("flag"),
   flagAsset: text("flag_asset"),
 }, (table) => ({
   codeIndex: uniqueIndex("nations_code_idx").on(table.code),
@@ -55,8 +59,13 @@ export const squads = pgTable(
 export const players = pgTable("players", {
   id: uuid("id").defaultRandom().primaryKey(),
   squadId: uuid("squad_id").notNull(),
+  externalId: text("external_id").notNull(),
+  shirtNumber: integer("shirt_number").notNull(),
   name: text("name").notNull(),
+  /** Primary position, kept as an enum so it can be filtered on. */
   position: positionEnum("position").notNull(),
+  /** Every role the player covered, primary first. */
+  positions: jsonb("positions").notNull().default([]),
   rating: integer("rating").notNull(),
   attack: integer("attack").notNull(),
   defense: integer("defense").notNull(),
@@ -76,7 +85,7 @@ export const draftSessions = pgTable("draft_sessions", {
   userSessionId: text("user_session_id").notNull(),
   formationId: uuid("formation_id").notNull(),
   mode: modeEnum("mode").notNull(),
-  style: text("style"),
+  style: styleEnum("style").notNull().default("balanced"),
   datasetVersion: text("dataset_version").notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });
@@ -86,7 +95,10 @@ export const draftPicks = pgTable("draft_picks", {
   draftSessionId: uuid("draft_session_id").notNull(),
   squadId: uuid("squad_id").notNull(),
   playerId: uuid("player_id").notNull(),
-  slot: positionEnum("slot").notNull(),
+  /** Formation slot id (`cb-r`) or bench slot id (`bench-def-1`). */
+  slotId: text("slot_id").notNull(),
+  position: positionEnum("position").notNull(),
+  onBench: boolean("on_bench").notNull().default(false),
   turnNumber: integer("turn_number").notNull(),
 });
 
@@ -103,6 +115,11 @@ export const leaderboardEntries = pgTable("leaderboard_entries", {
   id: uuid("id").defaultRandom().primaryKey(),
   simulationResultId: uuid("simulation_result_id").notNull(),
   nickname: text("nickname").notNull(),
+  overall: integer("overall").notNull(),
+  attack: integer("attack").notNull(),
+  defense: integer("defense").notNull(),
+  benchStrength: integer("bench_strength").notNull().default(0),
+  finish: text("finish").notNull(),
   score: text("score").notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });
