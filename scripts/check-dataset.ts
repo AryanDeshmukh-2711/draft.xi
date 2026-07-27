@@ -122,6 +122,57 @@ for (const worst of [false, true]) {
   }
 }
 
+console.log("\n=== style ===");
+{
+  const { formation, xi, used } = buildXi("4-3-3");
+  const benchPool = allPlayers
+    .filter((player) => !used.has(player.id))
+    .sort((left, right) => right.rating - left.rating);
+  const taken = new Set<string>();
+  const grab = (positions: string[]) => {
+    const found = benchPool.find(
+      (p) => !taken.has(p.id) && p.positions.some((pos) => positions.includes(pos)),
+    );
+    if (found) taken.add(found.id);
+    return found;
+  };
+  const bench = [
+    { slotId: "bench-gk", player: grab(["GK"]) },
+    { slotId: "bench-def-1", player: grab(["CB"]) },
+    { slotId: "bench-def-2", player: grab(["RB", "LB"]) },
+    { slotId: "bench-mid-1", player: grab(["CM"]) },
+    { slotId: "bench-mid-2", player: grab(["CDM", "CAM"]) },
+    { slotId: "bench-att-1", player: grab(["ST"]) },
+    { slotId: "bench-flex", player: grab(["RW", "LW"]) },
+  ].filter((entry): entry is { slotId: string; player: Player } => Boolean(entry.player));
+
+  for (const style of ["defensive", "balanced", "attacking"] as const) {
+    const ratings = rateSquad(xi, formation, style);
+    let goalsFor = 0;
+    let goalsAgainst = 0;
+    let matches = 0;
+    let injuries = 0;
+    let unreplaced = 0;
+    const finishes: Record<string, number> = {};
+
+    for (let seed = 1; seed <= 300; seed += 1) {
+      const result = simulateDraft({ xi, bench, formation, style, seed });
+      goalsFor += result.goalsFor;
+      goalsAgainst += result.goalsAgainst;
+      matches += result.matches.length;
+      injuries += result.injuries;
+      unreplaced += result.matches.filter((m) => m.injury?.includes("no cover")).length;
+      finishes[result.finish] = (finishes[result.finish] ?? 0) + 1;
+    }
+
+    console.log(
+      `${style.padEnd(9)} | overall ${ratings.overall} | goals ${(goalsFor / matches).toFixed(2)}-${(goalsAgainst / matches).toFixed(2)} | ` +
+        `injuries ${(injuries / 300).toFixed(2)}/run (${unreplaced} unreplaced) | ` +
+        `titles ${finishes["World Champions"] ?? 0}/300`,
+    );
+  }
+}
+
 console.log("\n=== dataset ===");
 console.log(
   `${new Set(squads.map((s) => s.nation)).size} nations, ${squads.length} squads, ${allPlayers.length} players`,

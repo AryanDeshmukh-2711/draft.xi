@@ -195,20 +195,26 @@ export function simulateDraft(input: SimulationInput): DraftResult {
     benchSlotRoles[entry.slotId] = inferBenchRole(entry.slotId);
   }
 
-  const ratings = rateSquad(xi, formation, style);
   const benchRating = rateBench(bench, benchSlotRoles);
+
+  // The XI changes over a campaign, so keep a working copy and re-rate it
+  // whenever an injury forces a change.
+  let currentXi = [...xi];
+  let ratings = rateSquad(currentXi, formation, style);
+  const startingRatings = ratings;
 
   // Capped at five points so depth never outweighs the XI itself.
   const benchBonus = (benchRating.strength / 100) * 5;
-  const overall = Math.round(clamp(ratings.overall + benchBonus));
+  const overall = Math.round(clamp(startingRatings.overall + benchBonus));
 
   const bias = styleGoalBias[style];
+  const slotById = new Map(formation.slots.map((slot) => [slot.id, slot]));
 
   // Outfield players first, best rated first. Nobody brings the reserve
   // keeper on to freshen the legs.
-  const outfieldSubs = bench
-    .filter((entry) => !entry.player.positions.includes("GK"))
-    .sort((left, right) => right.player.rating - left.player.rating);
+  const availableSubs = [...bench].sort((left, right) => right.player.rating - left.player.rating);
+  const usedSubs = new Set<string>();
+  const outfieldSubs = availableSubs.filter((entry) => !entry.player.positions.includes("GK"));
 
   const matches: MatchReport[] = [];
   let goalsFor = 0;
@@ -216,6 +222,9 @@ export function simulateDraft(input: SimulationInput): DraftResult {
   let eliminated = false;
   let finish = "World Champions";
   let fatigue = 0;
+  let injuries = 0;
+  // Carries an unreplaced injury forward: the side plays on a man light.
+  let handicap = 0;
 
   for (let index = 0; index < rounds.length; index += 1) {
     const fixture = rounds[index];
@@ -224,15 +233,41 @@ export function simulateDraft(input: SimulationInput): DraftResult {
     // Legs pile up across the tournament; substitutes pull some of it back.
     fatigue += Math.max(0, (100 - ratings.stamina) / 42);
     let substitution: string | null = null;
-    const sub = outfieldSubs.length > 0 ? outfieldSubs[index % outfieldSubs.length] : null;
+    let injury: string | null = null;
 
+    const injured = rollInjury(currentXi, fatigue, random);
+    if (injured) {
+      injuries += 1;
+      const slot = slotById.get(injured.slotId)!;
+      const minute = 8 + Math.floor(random() * 70);
+
+      const replacement = availableSubs.find(
+        (entry) => !usedSubs.has(entry.slotId) && getSlotFit(entry.player, slot.position) > 0,
+      );
+
+      if (replacement) {
+        usedSubs.add(replacement.slotId);
+        currentXi = currentXi.map((entry) =>
+          entry.slotId === injured.slotId ? { slotId: entry.slotId, player: replacement.player } : entry,
+        );
+        ratings = rateSquad(currentXi, formation, style);
+        injury = `${minute}' ${injured.player.name} injured — ${replacement.player.name} on at ${slot.position}`;
+      } else {
+        // Nobody on the bench can do that job, so the shape never recovers.
+        handicap += 3;
+        injury = `${minute}' ${injured.player.name} injured — no cover at ${slot.position}`;
+      }
+    }
+
+    const sub = outfieldSubs.find((entry) => !usedSubs.has(entry.slotId));
     if (sub && fatigue > 0.8) {
+      usedSubs.add(sub.slotId);
       const minute = 58 + Math.floor(random() * 26);
       substitution = `${minute}' ${sub.player.name} on (${sub.player.positions[0]}, ${sub.player.rating})`;
       fatigue = Math.max(0, fatigue - 0.55 - (sub.player.physical / 100) * 0.35);
     }
 
-    const drop = fatigue * 1.6 + (bench.length === 0 ? index * 0.5 : 0);
+    const drop = fatigue * 1.6 + handicap + (bench.length === 0 ? index * 0.5 : 0);
     const effectiveAttack = ratings.attack - drop;
     const effectiveDefense = ratings.defense - drop;
 
@@ -255,7 +290,7 @@ export function simulateDraft(input: SimulationInput): DraftResult {
     if (fixture.knockout && scoreFor === scoreAgainst) {
       // Shoot-out: the keeper and a settled shape decide it.
       shootout = true;
-      const keeper = xi.find((entry) => entry.slotId === "gk");
+      const keeper = currentXi.find((entry) => entry.slotId === "gk");
       const nerve = (keeper?.player.defense ?? 70) + ratings.balance / 2 + random() * 30;
       if (nerve > 118) scoreFor += 1;
       else scoreAgainst += 1;
@@ -272,6 +307,7 @@ export function simulateDraft(input: SimulationInput): DraftResult {
       outcome,
       note: buildMatchNote(outcome, scoreFor, scoreAgainst, shootout, bench.length === 0 && index > 2),
       substitution,
+      injury,
     });
 
     goalsFor += scoreFor;
@@ -304,18 +340,42 @@ export function simulateDraft(input: SimulationInput): DraftResult {
   return {
     seed,
     overall,
-    attack: ratings.attack,
-    defense: ratings.defense,
-    balance: ratings.balance,
+    attack: startingRatings.attack,
+    defense: startingRatings.defense,
+    balance: startingRatings.balance,
     benchStrength: benchRating.strength,
     goalsFor,
     goalsAgainst,
+    injuries,
     scoreline,
     headline: buildHeadline(finish, bestWin.match),
-    summary: buildSummary(ratings, benchRating, finish, style),
+    summary: buildSummary(startingRatings, benchRating, finish, style, injuries),
     finish,
     matches,
   };
+}
+
+/**
+ * About one campaign in two loses somebody. Tired and less physical sides
+ * break down more often.
+ */
+function rollInjury(xi: XiSelection[], fatigue: number, random: () => number) {
+  if (xi.length === 0) return null;
+
+  const chance = 0.04 + Math.min(0.05, fatigue * 0.03);
+  if (random() > chance) return null;
+
+  // Weight the draw towards the players least able to take the punishment.
+  const weights = xi.map((entry) => 1 + (100 - entry.player.physical) / 45);
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  let ticket = random() * total;
+
+  for (let index = 0; index < xi.length; index += 1) {
+    ticket -= weights[index];
+    if (ticket <= 0) return xi[index];
+  }
+
+  return xi[xi.length - 1];
 }
 
 function inferBenchRole(slotId: string): BenchRole {
@@ -360,6 +420,7 @@ function buildSummary(
   bench: ReturnType<typeof rateBench>,
   finish: string,
   style: DraftStyle,
+  injuries: number,
 ) {
   const parts: string[] = [];
 
@@ -371,6 +432,9 @@ function buildSummary(
   if (bench.strength === 0) parts.push("and no bench to turn to");
   else if (!bench.hasKeeper) parts.push("and no reserve keeper");
   else if (bench.strength > 78) parts.push("with a bench that changed matches");
+
+  if (injuries === 1) parts.push("and one injury along the way");
+  else if (injuries > 1) parts.push(`and ${injuries} injuries along the way`);
 
   return `A ${style} XI: ${parts.join(", ")}. Finish: ${finish.toLowerCase()}.`;
 }

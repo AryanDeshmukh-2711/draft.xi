@@ -51,13 +51,21 @@ export function formatPositions(player: Player) {
 }
 
 export function createSeededRandom(seed: number) {
-  let value = Math.abs(Math.trunc(seed)) % 2147483647;
+  // Park-Miller on its own returns a near-zero first value for a small seed,
+  // which makes sequential seeds behave almost identically. Scramble the seed
+  // and discard a few outputs so every seed starts somewhere unrelated.
+  let value = (Math.abs(Math.trunc(seed)) ^ 0x5f3759df) >>> 0;
+  value = Math.imul(value, 2654435761) >>> 0;
+  value %= 2147483647;
   if (value <= 0) value += 2147483646;
 
-  return () => {
+  const next = () => {
     value = (value * 16807) % 2147483647;
     return (value - 1) / 2147483646;
   };
+
+  for (let index = 0; index < 6; index += 1) next();
+  return next;
 }
 
 export function pickRandom<T>(items: T[], random: () => number) {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { isPlayerEligibleForBench, isPlayerEligibleForSlot } from "@/lib/draft-utils";
 import { rateSquad } from "@/lib/simulation";
+import { applyStyleShape, styleShapeLabel } from "@/lib/style-shape";
 import type {
   BenchSlot,
   DraftMode,
@@ -29,9 +30,21 @@ type SetupResponse = {
 };
 
 const styles: Array<{ id: DraftStyle; label: string; hint: string }> = [
-  { id: "defensive", label: "Defensive", hint: "Fewer goals at both ends. The spine carries the run." },
-  { id: "balanced", label: "Balanced", hint: "Attack and defense weighted evenly." },
-  { id: "attacking", label: "Attacking", hint: "More scored, more conceded. High variance." },
+  {
+    id: "defensive",
+    label: "Defensive",
+    hint: "The side drops deep and narrows. Fewer goals at both ends.",
+  },
+  {
+    id: "balanced",
+    label: "Balanced",
+    hint: "Even lines, standard width. Attack and defense weighted evenly.",
+  },
+  {
+    id: "attacking",
+    label: "Attacking",
+    hint: "A high line and stretched flanks. More scored, more conceded.",
+  },
 ];
 
 const modes: Array<{ id: DraftMode; label: string; hint: string }> = [
@@ -65,6 +78,8 @@ export function DraftGame() {
   const [xi, setXi] = useState<PickMap>({});
   const [bench, setBench] = useState<PickMap>({});
   const [target, setTarget] = useState<SlotTarget | null>(null);
+  // The player waiting to be placed. Nothing is slotted until you say where.
+  const [armed, setArmed] = useState<Player | null>(null);
 
   const [result, setResult] = useState<DraftResult | null>(null);
   const [nickname, setNickname] = useState("");
@@ -133,9 +148,14 @@ export function DraftGame() {
     return () => window.clearTimeout(timer);
   }, [lastPick]);
 
-  const formation = useMemo(
+  const baseFormation = useMemo(
     () => setup?.formations.find((item) => item.id === formationId) ?? setup?.formations[0] ?? null,
     [setup, formationId],
+  );
+  // Slot ids never change — only where the same eleven stand on the pitch.
+  const formation = useMemo(
+    () => (baseFormation ? applyStyleShape(baseFormation, style) : null),
+    [baseFormation, style],
   );
   const benchSlots = useMemo(() => setup?.benchSlots ?? [], [setup]);
 
@@ -170,35 +190,16 @@ export function DraftGame() {
     [benchSlots, bench],
   );
 
-  const findDestination = useCallback(
-    (player: Player): SlotTarget | null => {
-      if (target) {
-        if (target.kind === "xi") {
-          const slot = openXiSlots.find((item) => item.id === target.slotId);
-          if (slot && isPlayerEligibleForSlot(player, slot.position)) return target;
-        } else {
-          const slot = openBenchSlots.find((item) => item.id === target.slotId);
-          if (slot && isPlayerEligibleForBench(player, slot.role)) return target;
-        }
-      }
-
-      const natural = openXiSlots.find((slot) => player.positions.includes(slot.position));
-      if (natural) return { kind: "xi", slotId: natural.id };
-
-      const covered = openXiSlots.find((slot) => isPlayerEligibleForSlot(player, slot.position));
-      if (covered) return { kind: "xi", slotId: covered.id };
-
-      const benchSlot = openBenchSlots.find((slot) => isPlayerEligibleForBench(player, slot.role));
-      if (benchSlot) return { kind: "bench", slotId: benchSlot.id };
-
-      return null;
-    },
-    [target, openXiSlots, openBenchSlots],
+  const hasOpenSlotFor = useCallback(
+    (player: Player) =>
+      openXiSlots.some((slot) => isPlayerEligibleForSlot(player, slot.position)) ||
+      openBenchSlots.some((slot) => isPlayerEligibleForBench(player, slot.role)),
+    [openXiSlots, openBenchSlots],
   );
 
   const isPlayerAvailable = useCallback(
-    (player: Player) => !pickedIds.has(player.id) && findDestination(player) !== null,
-    [pickedIds, findDestination],
+    (player: Player) => !pickedIds.has(player.id) && hasOpenSlotFor(player),
+    [pickedIds, hasOpenSlotFor],
   );
 
   async function draw(kind: "new" | "nation" | "year") {
@@ -224,12 +225,33 @@ export function DraftGame() {
     }
   }
 
-  function pickPlayer(player: Player) {
-    if (!formation || !squad || pickedIds.has(player.id)) return;
+  /** Step one: arm a player. Nothing is placed until a slot is chosen. */
+  function selectPlayer(player: Player) {
+    if (!squad || pickedIds.has(player.id)) return;
 
-    const destination = findDestination(player);
-    if (!destination) {
-      setMessage(`${surnameOf(player.name)} has no open slot in this shape.`);
+    setMessage("");
+    setArmed((current) => (current?.id === player.id ? null : player));
+  }
+
+  /** Step two: commit the armed player to the slot the manager picked. */
+  function placeArmed(destination: SlotTarget) {
+    if (!formation || !squad || !armed) return;
+
+    const eligible =
+      destination.kind === "xi"
+        ? !xi[destination.slotId] &&
+          isPlayerEligibleForSlot(
+            armed,
+            formation.slots.find((slot) => slot.id === destination.slotId)!.position,
+          )
+        : !bench[destination.slotId] &&
+          isPlayerEligibleForBench(
+            armed,
+            benchSlots.find((slot) => slot.id === destination.slotId)!.role,
+          );
+
+    if (!eligible) {
+      setMessage(`${surnameOf(armed.name)} cannot fill that slot.`);
       return;
     }
 
@@ -238,17 +260,18 @@ export function DraftGame() {
         ? formation.slots.find((slot) => slot.id === destination.slotId)!.position
         : (benchSlots.find((slot) => slot.id === destination.slotId)?.role ?? "BENCH");
 
-    const pick = { player, squad: toMeta(squad) };
+    const pick = { player: armed, squad: toMeta(squad) };
     if (destination.kind === "xi") {
       setXi((current) => ({ ...current, [destination.slotId]: pick }));
     } else {
       setBench((current) => ({ ...current, [destination.slotId]: pick }));
     }
 
+    setLastPick({ name: armed.name, slot: label, id: Date.now() });
+    setArmed(null);
     // One draw, one squad, one player: the market closes after a pick.
     setSquad(null);
     setMessage("");
-    setLastPick({ name: player.name, slot: label, id: Date.now() });
 
     const nextOpen = formation.slots.find((slot) => !xi[slot.id] && slot.id !== destination.slotId);
     if (nextOpen) {
@@ -258,6 +281,14 @@ export function DraftGame() {
 
     const nextBench = benchSlots.find((slot) => !bench[slot.id] && slot.id !== destination.slotId);
     setTarget(nextBench ? { kind: "bench", slotId: nextBench.id } : null);
+  }
+
+  function handleSlotClick(destination: SlotTarget) {
+    if (armed) {
+      placeArmed(destination);
+      return;
+    }
+    setTarget(destination);
   }
 
   function clearBenchSlot(slotId: string) {
@@ -273,6 +304,7 @@ export function DraftGame() {
     setXi({});
     setBench({});
     setSquad(null);
+    setArmed(null);
     setResult(null);
     setRerollsLeft(totalRerolls);
     seedRef.current = newSeed();
@@ -388,20 +420,31 @@ export function DraftGame() {
 
   const prompt = result
     ? "Campaign complete. Submit it to the Top 100, or draft again."
-    : xiComplete
-      ? squad
-        ? "Take a substitute from this squad, or kick off with the bench you have."
-        : "The XI is complete. Roll again to fill the bench, or kick off now."
-      : squad
-        ? `Take one player from ${squad.nation} ${squad.year}${targetSlot ? ` — ${targetSlot} is next` : ""}.`
-        : xiFilled > 0
-          ? `Roll again for your next pick${targetSlot ? ` — ${targetSlot} is still open` : ""}.`
-          : "Choose a shape, a style and a mode, then roll your first squad.";
+    : armed
+      ? `Where does ${surnameOf(armed.name)} play? Tap a highlighted slot on the pitch or the bench.`
+      : xiComplete
+        ? squad
+          ? "Take a substitute from this squad, or kick off with the bench you have."
+          : "The XI is complete. Roll again to fill the bench, or kick off now."
+        : squad
+          ? `Take one player from ${squad.nation} ${squad.year}${targetSlot ? ` — ${targetSlot} is still open` : ""}.`
+          : xiFilled > 0
+            ? `Roll again for your next pick${targetSlot ? ` — ${targetSlot} is still open` : ""}.`
+            : "Choose a shape, a style and a mode, then roll your first squad.";
 
+  // While a player is armed, only the slots *he* can fill light up. Otherwise
+  // show what the drawn squad could solve, so the board still reads at a glance.
   const eligibleXiSlots = new Set<string>();
   const eligibleBenchSlots = new Set<string>();
 
-  if (squad) {
+  if (armed) {
+    for (const slot of openXiSlots) {
+      if (isPlayerEligibleForSlot(armed, slot.position)) eligibleXiSlots.add(slot.id);
+    }
+    for (const slot of openBenchSlots) {
+      if (isPlayerEligibleForBench(armed, slot.role)) eligibleBenchSlots.add(slot.id);
+    }
+  } else if (squad) {
     const free = squad.players.filter((player) => !pickedIds.has(player.id));
     for (const slot of openXiSlots) {
       if (free.some((player) => isPlayerEligibleForSlot(player, slot.position))) {
@@ -470,10 +513,12 @@ export function DraftGame() {
             rolling={rolling}
             showRatings={showRatings}
             formMap={formMap}
+            armedPlayerId={armed?.id ?? null}
             isPlayerAvailable={isPlayerAvailable}
             onRoll={() => draw("new")}
             onReroll={draw}
-            onPick={pickPlayer}
+            onSelect={selectPlayer}
+            onCancel={() => setArmed(null)}
           />
 
           <AnimatePresence>
@@ -527,16 +572,19 @@ export function DraftGame() {
             picks={xi}
             target={target}
             eligibleSlotIds={eligibleXiSlots}
+            placing={Boolean(armed)}
+            shapeLabel={styleShapeLabel[style]}
             showRatings={showRatings}
-            onSelectSlot={(slotId) => setTarget({ kind: "xi", slotId })}
+            onSelectSlot={(slotId) => handleSlotClick({ kind: "xi", slotId })}
           />
           <BenchStrip
             slots={benchSlots}
             picks={bench}
             target={target}
             eligibleSlotIds={eligibleBenchSlots}
+            placing={Boolean(armed)}
             showRatings={showRatings}
-            onSelectSlot={(slotId) => setTarget({ kind: "bench", slotId })}
+            onSelectSlot={(slotId) => handleSlotClick({ kind: "bench", slotId })}
             onClearSlot={clearBenchSlot}
           />
         </div>

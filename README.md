@@ -16,6 +16,10 @@ Play it at `/play`.
 1990, Morocco 2022, Spain 2026. You can read every name in the squad, but only one of them joins your
 side, and then the market closes. Every player you walk past is gone.
 
+**You place him yourself.** Selecting a player arms him and lights up every slot he can fill, on the
+pitch and on the bench. Nothing is committed until you choose one. Playing a centre-back in midfield
+is allowed — the game will let you, and the balance score will tell you what it cost.
+
 **The formation is the whole problem.** Eight shapes, from a 4-2-4 that needs four forwards and
 forgives nothing at the back to a 5-3-2 that wants five defenders you will struggle to find. A player
 is only worth taking if he solves a slot you actually have open.
@@ -34,14 +38,21 @@ with nobody to bring on wins the tournament about a fifth as often.
 role fit, bench depth, and some tournament luck. Level after 90 in a knockout goes to penalties,
 decided largely by your keeper. Fewer than four points in the group and you go home early.
 
+**Injuries.** About one campaign in two loses a player, tired and less physical sides more often. If
+the bench holds someone who can actually play that position he comes on and the run continues; if it
+does not, the shape never recovers. A bench full of strikers will not cover an injured right-back.
+
 **And the players remember.** Every campaign updates the record of each player who took part —
 appearances, results, titles, and whether they started or came off the bench. That becomes ranking
 points on `/players`, plus a form figure (▲/▼) shown next to their rating the next time they turn up
 in a draw. Form is reputation, not a modifier: it changes what a player is worth to *you*, never what
 the simulation does with them, so campaigns stay reproducible and leaderboard scores stay verifiable.
 
-Two modes: **Classic** shows ratings, **Almanac** hides them and makes you draft on memory. Three
-styles: **Defensive**, **Balanced**, **Attacking**, which change how the campaign is weighted.
+Two modes: **Classic** shows ratings, **Almanac** hides them and makes you draft on memory.
+
+Three styles: **Defensive**, **Balanced**, **Attacking**. They redraw the same eleven on the pitch —
+a deep, narrow block or a high, stretched line — and shift the goals at both ends: roughly 2.1–0.4 a
+match defensive against 2.6–0.8 attacking. Neither is stronger; they win about equally often.
 
 ---
 
@@ -57,13 +68,17 @@ npm run dev
 | `npm run dev` | Dev server on :3000 |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
-| `npm run check` | Validate the squad dataset and print simulation calibration |
+| `npm run check` | Validate the squad dataset and the pitch shapes, and print simulation calibration |
 | `npm run db:seed` | Load the dataset into Postgres (needs `DATABASE_URL`) |
 
 `npm run check` is the useful one when you touch the data or the model. It catches duplicate shirt
-numbers, squads without a keeper, unfillable formation slots, and out-of-range attributes, then runs
-200 campaigns each for a strong and a weak XI so you can see whether the goal model still produces
-football scorelines.
+numbers, squads without a keeper, unfillable formation slots and out-of-range attributes, checks that
+all 24 formation/style shapes draw without a token clipping the touchline or landing on a team-mate,
+then runs a few hundred campaigns so you can see whether the goal, injury and style numbers still
+look like football.
+
+`npx tsx scripts/sample-campaign.ts [style] [benchSize]` prints example campaigns with their
+injuries and substitutions, which is the quickest way to sanity-check the match narration.
 
 Set `NEXT_PUBLIC_SITE_URL` in production so canonical URLs, the sitemap, and robots.txt point at the
 right host.

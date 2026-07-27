@@ -6,8 +6,8 @@ export const howToPlaySteps = [
   },
   {
     step: "02",
-    title: "Take one useful player",
-    body: "You can read the whole squad, but only one player joins your side. Famous names are tempting; open positions decide the draft. If the formation still needs a left-back, another forward looks exciting and quietly damages the team.",
+    title: "Take one player, and place him yourself",
+    body: "You can read the whole squad, but only one player joins your side. Choose him, then choose where he plays: every slot he can fill lights up, on the pitch and on the bench, and nothing is committed until you pick one. Playing a centre-back in midfield is allowed — it just costs you.",
   },
   {
     step: "03",
@@ -35,8 +35,16 @@ export const rules = [
     body: "You can reroll for another nation in the same tournament, or the same nation in a different tournament. Three rerolls per draft. Spend them when a squad cannot solve your open position, not when the names are unfamiliar.",
   },
   {
-    title: "Players can cover, at a cost",
-    body: "A player slotted into a role he actually played contributes fully. A player shifted into a nearby role still helps, but at a discount that shows up in the balance score.",
+    title: "You choose the position, not the game",
+    body: "Selecting a player arms him; the slots he can fill light up and you place him. A player in a role he actually played contributes fully. Shifted into a nearby role he still helps, at a discount that shows up in the balance score.",
+  },
+  {
+    title: "Style changes the shape",
+    body: "Defensive drops the lines and pulls the flanks in. Attacking pushes them up and stretches the pitch wide. You can see it on the board, and it moves the goals at both ends once the campaign runs.",
+  },
+  {
+    title: "Players get injured",
+    body: "Somewhere around one campaign in two loses a player. If the bench holds someone who can do that job, he comes on and the run continues. If it does not, the shape never recovers.",
   },
   {
     title: "The bench is scored too",
@@ -107,7 +115,7 @@ export const modes = [
   },
   {
     title: "Style settings",
-    body: "Defensive, Balanced, and Attacking change how the campaign is scored and how many goals appear at both ends. A back three under an attacking style is a very different run.",
+    body: "Defensive, Balanced and Attacking redraw the same eleven on the pitch — deeper and narrower, or higher and wider — and change how many goals appear at both ends. A back three under an attacking style is a very different run.",
   },
 ];
 
@@ -130,7 +138,12 @@ export const faqs = [
   {
     question: "Do I have to fill the bench?",
     answer:
-      "No. The bench is optional. Filling it adds to your overall rating and lets you make substitutions during the campaign, while an empty bench means fatigue goes unanswered in the knockout rounds.",
+      "No, but it costs you. A bench adds to your overall rating, lets you freshen tired legs, and covers you when a player gets injured. Roughly one campaign in two loses somebody — if nobody on the bench can play that position, the side never recovers its shape.",
+  },
+  {
+    question: "Does the game choose where my players go?",
+    answer:
+      "No. You pick the player, then you pick the position. Every slot he can fill lights up on the pitch and the bench, and nothing is placed until you choose one. Playing someone out of position is allowed and sometimes right — it just costs you on the balance score.",
   },
   {
     question: "Do I need a football database open while playing?",

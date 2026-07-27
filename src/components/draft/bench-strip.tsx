@@ -9,6 +9,7 @@ type BenchStripProps = {
   picks: PickMap;
   target: SlotTarget | null;
   eligibleSlotIds: Set<string>;
+  placing: boolean;
   showRatings: boolean;
   onSelectSlot: (slotId: string) => void;
   onClearSlot: (slotId: string) => void;
@@ -19,6 +20,7 @@ export function BenchStrip({
   picks,
   target,
   eligibleSlotIds,
+  placing,
   showRatings,
   onSelectSlot,
   onClearSlot,
@@ -41,20 +43,27 @@ export function BenchStrip({
           const pick = picks[slot.id];
           const isTarget = target?.kind === "bench" && target.slotId === slot.id;
           const isEligible = eligibleSlotIds.has(slot.id);
+          const muted = placing && !isEligible;
 
           return (
             <div key={slot.id} className="relative">
               <button
                 type="button"
                 onClick={() => onSelectSlot(slot.id)}
-                aria-label={`${slot.label}${pick ? `, ${pick.player.name}` : ", open"}`}
+                aria-label={`${slot.label}${pick ? `, ${pick.player.name}` : ", open"}${
+                  placing && isEligible ? " — available for the selected player" : ""
+                }`}
                 aria-pressed={isTarget}
                 className={`clip-btn flex w-full flex-col items-center gap-1 border px-1 py-2 text-center transition ${
-                  isTarget
-                    ? "border-[var(--accent)] bg-[rgba(0,224,138,0.14)]"
-                    : isEligible
-                      ? "border-[var(--cyan)] bg-[rgba(45,212,245,0.08)]"
-                      : "border-[var(--border)] bg-white/[0.03] hover:border-white/25"
+                  muted ? "opacity-35" : ""
+                } ${
+                  placing && isEligible
+                    ? "slot-active border-[var(--accent)] bg-[rgba(0,224,138,0.24)]"
+                    : isTarget
+                      ? "border-[var(--accent)] bg-[rgba(0,224,138,0.14)]"
+                      : isEligible
+                        ? "border-[var(--cyan)] bg-[rgba(45,212,245,0.08)]"
+                        : "border-[var(--border)] bg-white/[0.03] hover:border-white/25"
                 }`}
               >
                 <span className="text-[0.55rem] font-bold uppercase tracking-[0.12em] text-[var(--muted)]">

@@ -11,6 +11,9 @@ type PitchProps = {
   picks: PickMap;
   target: SlotTarget | null;
   eligibleSlotIds: Set<string>;
+  /** True while a player is waiting to be placed. */
+  placing: boolean;
+  shapeLabel: string;
   showRatings: boolean;
   onSelectSlot: (slotId: string) => void;
 };
@@ -20,6 +23,8 @@ export function Pitch({
   picks,
   target,
   eligibleSlotIds,
+  placing,
+  shapeLabel,
   showRatings,
   onSelectSlot,
 }: PitchProps) {
@@ -36,38 +41,60 @@ export function Pitch({
         <span className="tnum text-[0.7rem] font-bold text-[var(--accent)]">{filled}/11</span>
       </div>
 
+      <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between gap-2">
+        <span className="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-white/55">
+          {shapeLabel}
+        </span>
+        {placing ? (
+          <span className="clip-tag bg-[var(--accent)] px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-[0.14em] text-[#04070d]">
+            Choose a position
+          </span>
+        ) : null}
+      </div>
+
       {formation.slots.map((slot) => {
         const pick = picks[slot.id];
         const isTarget = target?.kind === "xi" && target.slotId === slot.id;
         const isEligible = eligibleSlotIds.has(slot.id);
+        // While placing, anything the armed player cannot fill drops back.
+        const muted = placing && !isEligible;
 
         return (
           <motion.button
             key={slot.id}
             type="button"
             onClick={() => onSelectSlot(slot.id)}
-            aria-label={`${slot.position} slot${pick ? `, ${pick.player.name}` : ", open"}`}
+            aria-label={`${slot.position} slot${pick ? `, ${pick.player.name}` : ", open"}${
+              placing && isEligible ? " — available for the selected player" : ""
+            }`}
             aria-pressed={isTarget}
-            layout
+            // Position stays in CSS so the shape is always correct, even when
+            // the tab is backgrounded and animation frames are not running.
+            style={{
+              left: `${slot.x}%`,
+              bottom: `${slot.y}%`,
+              transition: "left 550ms cubic-bezier(0.16,1,0.3,1), bottom 550ms cubic-bezier(0.16,1,0.3,1)",
+            }}
             initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            animate={{ opacity: muted ? 0.35 : 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
-            style={{ left: `${slot.x}%`, bottom: `${slot.y}%` }}
             className="absolute z-10 flex w-[19%] min-w-[54px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-1 px-0.5 py-1 text-center outline-none"
           >
             <span
               className={`relative flex h-10 w-10 items-center justify-center rounded-full border text-[0.72rem] font-bold transition-colors sm:h-12 sm:w-12 sm:text-sm ${
-                isTarget && !pick ? "slot-active" : ""
+                (placing && isEligible) || (isTarget && !pick && !placing) ? "slot-active" : ""
               } ${
-                pick
-                  ? "border-[var(--accent)] bg-[rgba(0,224,138,0.16)] text-white shadow-[0_0_18px_-4px_var(--accent)]"
-                  : isTarget
-                    ? "border-[var(--accent)] bg-[rgba(0,224,138,0.1)] text-[var(--accent)]"
-                    : isEligible
-                      ? "border-[var(--cyan)] bg-[rgba(45,212,245,0.1)] text-[var(--cyan)]"
-                      : "border-dashed border-white/25 bg-black/40 text-white/45"
+                placing && isEligible
+                  ? "border-[var(--accent)] bg-[rgba(0,224,138,0.28)] text-white"
+                  : pick
+                    ? "border-[var(--accent)] bg-[rgba(0,224,138,0.16)] text-white shadow-[0_0_18px_-4px_var(--accent)]"
+                    : isTarget
+                      ? "border-[var(--accent)] bg-[rgba(0,224,138,0.1)] text-[var(--accent)]"
+                      : isEligible
+                        ? "border-[var(--cyan)] bg-[rgba(45,212,245,0.1)] text-[var(--cyan)]"
+                        : "border-dashed border-white/25 bg-black/40 text-white/45"
               }`}
             >
               <AnimatePresence mode="popLayout" initial={false}>

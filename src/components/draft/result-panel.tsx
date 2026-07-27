@@ -72,12 +72,17 @@ export function ResultPanel({
         </motion.div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-1.5 sm:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label="Attack" value={result.attack} color="var(--magenta)" />
         <Stat label="Defense" value={result.defense} color="var(--cyan)" />
         <Stat label="Balance" value={result.balance} color="var(--accent)" />
         <Stat label="Bench" value={result.benchStrength} color="var(--amber)" />
         <Stat label="Goals" value={`${result.goalsFor}:${result.goalsAgainst}`} color="var(--muted)" />
+        <Stat
+          label="Injuries"
+          value={result.injuries}
+          color={result.injuries > 0 ? "var(--magenta)" : "var(--muted)"}
+        />
       </div>
 
       <ol className="mt-6 space-y-1.5">
@@ -97,6 +102,9 @@ export function ResultPanel({
                   {match.round} · v {match.opponent}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-white/70">{match.note}</p>
+                {match.injury ? (
+                  <p className="mt-0.5 truncate text-xs text-[var(--magenta)]">✚ {match.injury}</p>
+                ) : null}
                 {match.substitution ? (
                   <p className="mt-0.5 truncate text-xs text-[var(--amber)]">↔ {match.substitution}</p>
                 ) : null}

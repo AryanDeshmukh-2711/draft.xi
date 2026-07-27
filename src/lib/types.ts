@@ -74,6 +74,7 @@ export type MatchReport = {
   outcome: "win" | "draw" | "loss";
   note: string;
   substitution: string | null;
+  injury: string | null;
 };
 
 export type DraftResult = {
@@ -85,6 +86,7 @@ export type DraftResult = {
   benchStrength: number;
   goalsFor: number;
   goalsAgainst: number;
+  injuries: number;
   scoreline: string;
   headline: string;
   summary: string;

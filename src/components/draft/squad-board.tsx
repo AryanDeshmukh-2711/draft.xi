@@ -38,10 +38,12 @@ type SquadBoardProps = {
   rolling: boolean;
   showRatings: boolean;
   formMap: Record<string, number>;
+  armedPlayerId: string | null;
   isPlayerAvailable: (player: Player) => boolean;
   onRoll: () => void;
   onReroll: (kind: "nation" | "year") => void;
-  onPick: (player: Player) => void;
+  onSelect: (player: Player) => void;
+  onCancel: () => void;
 };
 
 export function SquadBoard({
@@ -50,10 +52,12 @@ export function SquadBoard({
   rolling,
   showRatings,
   formMap,
+  armedPlayerId,
   isPlayerAvailable,
   onRoll,
   onReroll,
-  onPick,
+  onSelect,
+  onCancel,
 }: SquadBoardProps) {
   // No `mode="wait"` here on purpose: a backgrounded tab stops firing
   // animation frames, and gating the incoming squad on an exit animation
@@ -75,18 +79,32 @@ export function SquadBoard({
             onReroll={onReroll}
           />
 
-          <p className="eyebrow mt-5">Pick a player</p>
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <p className="eyebrow">{armedPlayerId ? "Now choose a position" : "Pick a player"}</p>
+            {armedPlayerId ? (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="text-xs font-semibold text-[var(--muted)] underline underline-offset-2 transition hover:text-[var(--magenta)]"
+              >
+                Cancel
+              </button>
+            ) : null}
+          </div>
 
           <PlayerGrid
             squad={squad}
             showRatings={showRatings}
             formMap={formMap}
+            armedPlayerId={armedPlayerId}
             isPlayerAvailable={isPlayerAvailable}
-            onPick={onPick}
+            onSelect={onSelect}
           />
 
           <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
-            One draw, one squad, one player. Taking a name ends this turn.
+            {armedPlayerId
+              ? "Tap a highlighted slot on the pitch or the bench to place him."
+              : "One draw, one squad, one player. Taking a name ends this turn."}
           </p>
         </motion.section>
       ) : (
@@ -189,14 +207,16 @@ function PlayerGrid({
   squad,
   showRatings,
   formMap,
+  armedPlayerId,
   isPlayerAvailable,
-  onPick,
+  onSelect,
 }: {
   squad: Squad;
   showRatings: boolean;
   formMap: Record<string, number>;
+  armedPlayerId: string | null;
   isPlayerAvailable: (player: Player) => boolean;
-  onPick: (player: Player) => void;
+  onSelect: (player: Player) => void;
 }) {
   const sorted = [...squad.players].sort((a, b) => {
     const delta = groupOrder[groupOf[a.positions[0]]] - groupOrder[groupOf[b.positions[0]]];
@@ -214,24 +234,29 @@ function PlayerGrid({
         const available = isPlayerAvailable(player);
         const accent = groupAccent[groupOf[player.positions[0]]];
         const form = formMap[player.id] ?? 0;
+        const armed = armedPlayerId === player.id;
+        const dimmed = Boolean(armedPlayerId) && !armed;
 
         return (
           <motion.button
             key={player.id}
             type="button"
-            onClick={() => onPick(player)}
+            onClick={() => onSelect(player)}
             disabled={!available}
+            aria-pressed={armed}
             variants={{
               hidden: { opacity: 0, y: 10 },
               show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
             }}
             whileHover={available ? { y: -2 } : undefined}
             whileTap={available ? { scale: 0.97 } : undefined}
-            style={available ? { borderLeftColor: accent } : undefined}
+            style={available && !armed ? { borderLeftColor: accent } : undefined}
             className={`clip-btn flex items-stretch justify-between gap-2 border border-l-2 px-2.5 py-2 text-left transition-colors ${
-              available
-                ? "border-[var(--border)] bg-white/[0.04] text-white hover:bg-white/[0.09]"
-                : "cursor-not-allowed border-transparent bg-white/[0.02] text-[var(--muted)] opacity-45"
+              armed
+                ? "border-[var(--accent)] bg-[rgba(0,224,138,0.2)] text-white shadow-[0_0_24px_-8px_var(--accent)]"
+                : available
+                  ? `border-[var(--border)] bg-white/[0.04] text-white hover:bg-white/[0.09] ${dimmed ? "opacity-45" : ""}`
+                  : "cursor-not-allowed border-transparent bg-white/[0.02] text-[var(--muted)] opacity-45"
             }`}
           >
             <span className="min-w-0">
