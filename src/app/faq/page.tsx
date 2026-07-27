@@ -29,12 +29,9 @@ export default function FaqPage() {
         intro="These answers help new players understand the game before they draft. They also clarify the difference between a World Cup draft, a general football quiz, and a full management simulator."
       >
         <Section title="Questions">
-          <div className="space-y-3">
+          <div className="space-y-2">
             {faqs.map((item) => (
-              <article
-                key={item.question}
-                className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--surface)] p-5"
-              >
+              <article key={item.question} className="hud p-5">
                 <h3 className="text-base font-bold text-white">{item.question}</h3>
                 <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.answer}</p>
               </article>

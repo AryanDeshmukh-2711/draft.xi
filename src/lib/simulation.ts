@@ -66,10 +66,7 @@ const styleGoalBias: Record<DraftStyle, { scored: number; conceded: number }> = 
   attacking: { scored: 0.32, conceded: 0.34 },
 };
 
-/**
- * Opponent strength sits on the same 0-99 scale as the squad ratings, so a
- * well-drafted XI outguns the group and has to work for the knockout rounds.
- */
+// Opponent strength is on the same 0-99 scale as the squad ratings.
 const rounds = [
   { round: "Group match 1", opponent: "Costa Rica", strength: 64, knockout: false },
   { round: "Group match 2", opponent: "Serbia", strength: 68, knockout: false },
@@ -108,10 +105,7 @@ function samplePoisson(mean: number, random: () => number) {
   return count;
 }
 
-/**
- * Splits the XI into the numbers the scorecard shows. Playing someone out of
- * position scales their contribution down rather than blocking the pick.
- */
+/** The three numbers the scorecard shows. Out-of-position players count for less. */
 export function rateSquad(xi: XiSelection[], formation: Formation, style: DraftStyle) {
   const slotById = new Map(formation.slots.map((slot) => [slot.id, slot]));
 
@@ -147,7 +141,7 @@ export function rateSquad(xi: XiSelection[], formation: Formation, style: DraftS
   const stamina = physicalTotal / count;
   const averageFit = fitTotal / count;
 
-  // Circulation helps the attack, so a passing midfield lifts the final number.
+  // A midfield that circulates the ball lifts the attack number.
   const attack = clamp(rawAttack * 0.86 + passing * 0.14);
   const defense = clamp(rawDefense * 0.92 + stamina * 0.08);
 
@@ -167,10 +161,7 @@ export function rateSquad(xi: XiSelection[], formation: Formation, style: DraftS
   };
 }
 
-/**
- * A bench is only worth what it can actually cover. A full seven with a real
- * reserve keeper is worth far more than seven spare strikers.
- */
+/** A bench is worth what it can cover, not what it cost. */
 export function rateBench(bench: BenchSelection[], benchSlotRoles: Record<string, BenchRole>) {
   if (bench.length === 0) {
     return { strength: 0, depth: 0, hasKeeper: false };
@@ -207,12 +198,17 @@ export function simulateDraft(input: SimulationInput): DraftResult {
   const ratings = rateSquad(xi, formation, style);
   const benchRating = rateBench(bench, benchSlotRoles);
 
-  // A deep bench is worth a couple of points of overall quality, no more.
+  // Capped at five points so depth never outweighs the XI itself.
   const benchBonus = (benchRating.strength / 100) * 5;
   const overall = Math.round(clamp(ratings.overall + benchBonus));
 
   const bias = styleGoalBias[style];
-  const availableSubs = [...bench].sort((left, right) => right.player.rating - left.player.rating);
+
+  // Outfield players first, best rated first. Nobody brings the reserve
+  // keeper on to freshen the legs.
+  const outfieldSubs = bench
+    .filter((entry) => !entry.player.positions.includes("GK"))
+    .sort((left, right) => right.player.rating - left.player.rating);
 
   const matches: MatchReport[] = [];
   let goalsFor = 0;
@@ -225,14 +221,14 @@ export function simulateDraft(input: SimulationInput): DraftResult {
     const fixture = rounds[index];
     if (eliminated) break;
 
-    // Legs pile up. Without cover on the bench the XI drops off late on.
+    // Legs pile up across the tournament; substitutes pull some of it back.
     fatigue += Math.max(0, (100 - ratings.stamina) / 42);
     let substitution: string | null = null;
-    const sub = availableSubs[index % Math.max(1, availableSubs.length)];
+    const sub = outfieldSubs.length > 0 ? outfieldSubs[index % outfieldSubs.length] : null;
 
-    if (bench.length > 0 && sub && fatigue > 0.8) {
+    if (sub && fatigue > 0.8) {
       const minute = 58 + Math.floor(random() * 26);
-      substitution = `${minute}' ${sub.player.name} on, ${Math.round(sub.player.rating)} rated`;
+      substitution = `${minute}' ${sub.player.name} on (${sub.player.positions[0]}, ${sub.player.rating})`;
       fatigue = Math.max(0, fatigue - 0.55 - (sub.player.physical / 100) * 0.35);
     }
 
@@ -257,8 +253,7 @@ export function simulateDraft(input: SimulationInput): DraftResult {
     let shootout = false;
 
     if (fixture.knockout && scoreFor === scoreAgainst) {
-      // Knockout ties go to a shoot-out, decided by the keeper and the nerve
-      // of a balanced side.
+      // Shoot-out: the keeper and a settled shape decide it.
       shootout = true;
       const keeper = xi.find((entry) => entry.slotId === "gk");
       const nerve = (keeper?.player.defense ?? 70) + ratings.balance / 2 + random() * 30;

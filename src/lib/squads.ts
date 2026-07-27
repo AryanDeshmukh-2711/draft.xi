@@ -1,12 +1,8 @@
 import type { Player, PlayerAttributes, Position, Squad } from "./types";
 
-/**
- * Squads are written as compact tuples so the dataset stays readable:
- * [shirt number, name, positions, rating, attribute overrides?]
- *
- * Attributes are derived from the primary position archetype and can be
- * nudged per player when someone was famously unusual for their role.
- */
+// [shirt, name, positions, rating, overrides?]
+// Attributes come from the primary-position archetype below; override only
+// where a player was genuinely unusual for their role.
 type PlayerSeed = [number, string, string, number] | [number, string, string, number, Partial<PlayerAttributes>];
 
 type Archetype = { attack: number; defense: number; passing: number; physical: number };

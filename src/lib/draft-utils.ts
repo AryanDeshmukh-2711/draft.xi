@@ -1,9 +1,6 @@
 import type { BenchRole, Player, Position } from "./types";
 
-/**
- * Player positions accepted by each slot. The first entry is always the slot
- * itself; the rest are the roles a manager would realistically shuffle in.
- */
+// Slot -> the player roles it accepts. Own role first, then realistic cover.
 const slotEligibility: Record<Position, Position[]> = {
   GK: ["GK"],
   RB: ["RB", "RWB", "RM"],
@@ -29,10 +26,7 @@ const benchRolePositions: Record<BenchRole, Position[]> = {
   ANY: ["GK", "RB", "CB", "LB", "RWB", "LWB", "CDM", "CM", "CAM", "RM", "LM", "RW", "LW", "ST"],
 };
 
-/**
- * How well a player suits a slot. 1 is a natural fit, anything lower is a
- * player playing out of position, and 0 means the slot is closed to them.
- */
+/** 1 = natural, <1 = out of position, 0 = can't play there. */
 export function getSlotFit(player: Player, slot: Position) {
   if (player.positions.includes(slot)) {
     return player.positions[0] === slot ? 1 : 0.97;

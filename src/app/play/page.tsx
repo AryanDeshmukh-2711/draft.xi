@@ -10,15 +10,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/play" },
 };
 
+const guideLinks = [
+  { href: "/how-to-play", label: "How to play" },
+  { href: "/rules", label: "Rules" },
+  { href: "/strategy", label: "Strategy" },
+  { href: "/faq", label: "FAQ" },
+];
+
 export default function PlayPage() {
   return (
     <main className="mx-auto flex w-full max-w-[104rem] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
-            Draft zone
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <p className="eyebrow">Draft zone</p>
+          <h1 className="mt-2 text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
             Build your World Cup XI
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
@@ -27,21 +32,22 @@ export default function PlayPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted)]">
-          <span>
-            <strong className="text-white">{datasetStats.nations}</strong> nations
-          </span>
-          <span>·</span>
-          <span>
-            <strong className="text-white">{datasetStats.squads}</strong> squads
-          </span>
-          <span>·</span>
-          <span>
-            <strong className="text-white">{datasetStats.players}</strong> players
-          </span>
+        <div className="flex flex-wrap items-center gap-5">
+          {[
+            ["Nations", datasetStats.nations],
+            ["Squads", datasetStats.squads],
+            ["Players", datasetStats.players],
+          ].map(([label, value]) => (
+            <div key={label} className="border-l-2 border-[var(--accent)] pl-2.5">
+              <div className="tnum display text-xl font-bold leading-none text-white">{value}</div>
+              <div className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+                {label}
+              </div>
+            </div>
+          ))}
           <Link
             href="/leaderboard"
-            className="rounded-full border border-[var(--border)] bg-white/5 px-4 py-2 font-semibold text-white transition hover:bg-white/10"
+            className="clip-btn border border-[var(--border)] bg-white/[0.04] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
             Top 100
           </Link>
@@ -50,18 +56,12 @@ export default function PlayPage() {
 
       <DraftGame />
 
-      <nav className="flex flex-wrap gap-2 text-sm">
-        {[
-          { href: "/", label: "Home" },
-          { href: "/how-to-play", label: "How to play" },
-          { href: "/rules", label: "Rules" },
-          { href: "/strategy", label: "Strategy" },
-          { href: "/faq", label: "FAQ" },
-        ].map((item) => (
+      <nav className="flex flex-wrap gap-2">
+        {guideLinks.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-full border border-[var(--border)] bg-white/5 px-4 py-2 font-semibold text-white transition hover:bg-white/10"
+            className="clip-btn border border-[var(--border)] bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
             {item.label}
           </Link>

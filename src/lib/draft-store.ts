@@ -24,7 +24,6 @@ export function getSquadById(squadId: string) {
 
 const playerIndex = new Map(squads.flatMap((squad) => squad.players.map((player) => [player.id, player])));
 
-/** Picks arrive from the client as ids so the server always scores real data. */
 export function getPlayerById(playerId: string) {
   return playerIndex.get(playerId) ?? null;
 }
@@ -37,7 +36,6 @@ function selectPool(kind: RollKind, current: Squad | null) {
   if (!current) return squads;
 
   if (kind === "nation") {
-    // Same tournament, different country. Fall back to any other squad.
     const sameYear = squads.filter((squad) => squad.year === current.year && squad.nation !== current.nation);
     return sameYear.length > 0 ? sameYear : squads.filter((squad) => squad.nation !== current.nation);
   }

@@ -29,90 +29,96 @@ export function Scorecard({
 }: ScorecardProps) {
   const filled = formation.slots.filter((slot) => xi[slot.id]).length;
   const benchFilled = benchSlots.filter((slot) => bench[slot.id]).length;
-  const hasPicks = filled > 0;
+  const live = filled > 0 && showRatings;
 
   return (
-    <section className="rounded-[1.25rem] border border-[var(--border)] bg-black/25 p-4">
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-white">
-          Scorecard · {filled}/{formation.slots.length}
-        </h3>
-        <span className="text-2xl font-bold text-white">{hasPicks && showRatings ? overall : "—"}</span>
+    <section className="hud hud-rule p-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="eyebrow">Scorecard</p>
+          <p className="tnum mt-1 text-sm font-bold text-[var(--accent)]">
+            {filled}/{formation.slots.length} named
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="eyebrow">Overall</p>
+          <p className="tnum display text-4xl font-bold leading-none text-white">
+            {live ? overall : "—"}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-3 space-y-2">
-        <Meter label="Attack" value={hasPicks && showRatings ? attack : null} tone="attack" />
-        <Meter label="Defense" value={hasPicks && showRatings ? defense : null} tone="defense" />
-        <Meter label="Balance" value={hasPicks && showRatings ? balance : null} tone="balance" />
+      <div className="mt-4 space-y-2.5">
+        <Meter label="Attack" value={live ? attack : null} color="var(--magenta)" />
+        <Meter label="Defense" value={live ? defense : null} color="var(--cyan)" />
+        <Meter label="Balance" value={live ? balance : null} color="var(--accent)" />
       </div>
 
-      <p className="mt-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-        Starting XI
-      </p>
-      <ul className="mt-2 space-y-1">
-        {formation.slots.map((slot) => {
-          const pick = xi[slot.id];
-          return (
-            <li
-              key={slot.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs"
-            >
-              <span className="w-10 shrink-0 font-bold text-[var(--muted)]">{slot.position}</span>
-              <span className="min-w-0 flex-1 truncate text-white">
-                {pick ? `${pick.squad.flag} ${surnameOf(pick.player.name)}` : "—"}
-              </span>
-              <span className="shrink-0 font-semibold text-white/80">
-                {pick && showRatings ? pick.player.rating : ""}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      <SlotList
+        title="Starting XI"
+        rows={formation.slots.map((slot) => ({
+          key: slot.id,
+          tag: slot.position,
+          pick: xi[slot.id],
+        }))}
+        showRatings={showRatings}
+      />
 
-      <p className="mt-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-        Bench · {benchFilled}/{benchSlots.length}
-      </p>
-      <ul className="mt-2 space-y-1">
-        {benchSlots.map((slot) => {
-          const pick = bench[slot.id];
-          return (
-            <li
-              key={slot.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs"
-            >
-              <span className="w-10 shrink-0 font-bold text-[var(--muted)]">{slot.role}</span>
-              <span className="min-w-0 flex-1 truncate text-white">
-                {pick ? `${pick.squad.flag} ${surnameOf(pick.player.name)}` : "—"}
-              </span>
-              <span className="shrink-0 font-semibold text-white/80">
-                {pick && showRatings ? pick.player.rating : ""}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      <SlotList
+        title={`Bench · ${benchFilled}/${benchSlots.length}`}
+        rows={benchSlots.map((slot) => ({
+          key: slot.id,
+          tag: slot.role,
+          pick: bench[slot.id],
+        }))}
+        showRatings={showRatings}
+      />
     </section>
   );
 }
 
-const toneColors: Record<string, string> = {
-  attack: "bg-[var(--accent)]",
-  defense: "bg-[#4d9de0]",
-  balance: "bg-[#5fd08a]",
-};
+function SlotList({
+  title,
+  rows,
+  showRatings,
+}: {
+  title: string;
+  rows: Array<{ key: string; tag: string; pick?: PickMap[string] }>;
+  showRatings: boolean;
+}) {
+  return (
+    <>
+      <p className="eyebrow mt-5">{title}</p>
+      <ul className="mt-2 divide-y divide-[var(--border)] border-y border-[var(--border)]">
+        {rows.map((row) => (
+          <li key={row.key} className="flex items-center gap-2 py-1.5 text-xs">
+            <span className="w-9 shrink-0 font-bold uppercase tracking-[0.08em] text-[var(--muted)]">
+              {row.tag}
+            </span>
+            <span
+              className={`min-w-0 flex-1 truncate ${row.pick ? "text-white" : "text-white/25"}`}
+            >
+              {row.pick ? `${row.pick.squad.flag} ${surnameOf(row.pick.player.name)}` : "—"}
+            </span>
+            <span className="tnum shrink-0 font-bold text-[var(--accent)]">
+              {row.pick && showRatings ? row.pick.player.rating : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
 
-function Meter({ label, value, tone }: { label: string; value: number | null; tone: string }) {
+function Meter({ label, value, color }: { label: string; value: number | null; color: string }) {
   return (
     <div>
-      <div className="flex items-center justify-between text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-        <span>{label}</span>
-        <span className="text-white">{value ?? "—"}</span>
+      <div className="flex items-baseline justify-between text-[0.68rem] font-bold uppercase tracking-[0.14em]">
+        <span className="text-[var(--muted)]">{label}</span>
+        <span className="tnum text-white">{value ?? "—"}</span>
       </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div
-          className={`h-full rounded-full transition-[width] duration-500 ${toneColors[tone]}`}
-          style={{ width: `${value ?? 0}%` }}
-        />
+      <div className="seg-track mt-1.5">
+        <div className="seg-fill" style={{ width: `${value ?? 0}%`, background: color }} />
       </div>
     </div>
   );

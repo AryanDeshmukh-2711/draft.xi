@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, CardGrid, ContentPage, Prose, Section } from "@/components/content";
+import { Card, CardGrid, ChecklistGrid, ContentPage, Prose, Section } from "@/components/content";
 import { checklist, strategy } from "@/content/guide";
 
 export const metadata: Metadata = {
@@ -63,16 +63,7 @@ export default function StrategyPage() {
       </Section>
 
       <Section title="The checklist">
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {checklist.map((item) => (
-            <li
-              key={item}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm leading-6 text-white/90"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
+        <ChecklistGrid items={checklist} />
       </Section>
     </ContentPage>
   );

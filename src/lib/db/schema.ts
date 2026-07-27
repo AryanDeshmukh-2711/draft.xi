@@ -62,9 +62,8 @@ export const players = pgTable("players", {
   externalId: text("external_id").notNull(),
   shirtNumber: integer("shirt_number").notNull(),
   name: text("name").notNull(),
-  /** Primary position, kept as an enum so it can be filtered on. */
   position: positionEnum("position").notNull(),
-  /** Every role the player covered, primary first. */
+  // Every role the player covered, primary first.
   positions: jsonb("positions").notNull().default([]),
   rating: integer("rating").notNull(),
   attack: integer("attack").notNull(),
@@ -95,7 +94,7 @@ export const draftPicks = pgTable("draft_picks", {
   draftSessionId: uuid("draft_session_id").notNull(),
   squadId: uuid("squad_id").notNull(),
   playerId: uuid("player_id").notNull(),
-  /** Formation slot id (`cb-r`) or bench slot id (`bench-def-1`). */
+  // Formation slot id (cb-r) or bench slot id (bench-def-1).
   slotId: text("slot_id").notNull(),
   position: positionEnum("position").notNull(),
   onBench: boolean("on_bench").notNull().default(false),

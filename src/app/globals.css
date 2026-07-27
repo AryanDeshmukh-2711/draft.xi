@@ -1,47 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07111d;
-  --foreground: #f5f7fb;
-  --muted: #9aa8ba;
-  --surface: rgba(13, 24, 38, 0.82);
-  --surface-strong: #102033;
-  --border: rgba(154, 168, 186, 0.18);
-  --accent: #ff6b35;
-  --accent-strong: #ff8a5c;
-  --accent-secondary: #1f3a5f;
-  --pitch: #10341f;
-  --pitch-grid: rgba(255, 255, 255, 0.08);
+  --bg: #04070d;
+  --bg-elev: #070c16;
+  --surface: rgba(10, 17, 28, 0.84);
+  --surface-2: rgba(16, 25, 40, 0.92);
+  --border: rgba(122, 158, 190, 0.16);
+  --border-lit: rgba(0, 224, 138, 0.38);
+
+  --text: #e9f1fa;
+  --muted: #7d92ac;
+
+  --accent: #00e08a;
+  --accent-dim: #05a76b;
+  --cyan: #2dd4f5;
+  --magenta: #ff4d79;
+  --amber: #ffc23c;
+
+  --pitch-turf: #07130f;
+  --pitch-line: rgba(0, 224, 138, 0.3);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --color-surface-strong: var(--surface-strong);
   --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
   --color-accent: var(--accent);
-  --color-accent-strong: var(--accent-strong);
-  --color-accent-secondary: var(--accent-secondary);
-  --color-pitch: var(--pitch);
-  --color-pitch-grid: var(--pitch-grid);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(255, 107, 53, 0.2), transparent 26%),
-    radial-gradient(circle at right top, rgba(31, 58, 95, 0.45), transparent 32%),
-    linear-gradient(180deg, #08101a 0%, #050b12 100%);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --color-cyan: var(--cyan);
+  --color-magenta: var(--magenta);
+  --color-amber: var(--amber);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 * {
   box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 224, 138, 0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(45, 212, 245, 0.08), transparent),
+    linear-gradient(rgba(122, 158, 190, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 158, 190, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-attachment: fixed;
 }
 
 a {
@@ -50,6 +60,143 @@ a {
 }
 
 ::selection {
-  background: rgba(255, 107, 53, 0.35);
-  color: #ffffff;
+  background: var(--accent);
+  color: #04070d;
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Ratings, scorelines and shirt numbers should never jitter as they change. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display), var(--font-mono), monospace;
+}
+
+/* --- HUD panels ------------------------------------------------------- */
+
+.hud {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  clip-path: polygon(
+    0 14px,
+    14px 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%
+  );
+}
+
+.hud-lit {
+  border-color: var(--border-lit);
+  box-shadow:
+    0 0 0 1px rgba(0, 224, 138, 0.08),
+    0 0 40px -18px rgba(0, 224, 138, 0.7);
+}
+
+/* Thin accent rule along the top edge of a panel. */
+.hud-rule::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 34px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.clip-tag {
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+.clip-btn {
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+/* --- Bits ------------------------------------------------------------- */
+
+.eyebrow {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.glow {
+  box-shadow: 0 0 24px -6px var(--accent);
+}
+
+/* Segmented meter, like a broadcast stat bar. */
+.seg-track {
+  height: 0.5rem;
+  background: rgba(122, 158, 190, 0.12);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 6px);
+  mask-image: repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 6px);
+}
+
+.seg-fill {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes slot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 224, 138, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 224, 138, 0);
+  }
+}
+
+.slot-active {
+  animation: slot-pulse 1.8s ease-out infinite;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+.sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(0, 224, 138, 0.14), transparent);
+  animation: sweep 2.4s ease-in-out infinite;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 224, 138, 0.4) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 224, 138, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot-active,
+  .sweep::after {
+    animation: none;
+  }
 }

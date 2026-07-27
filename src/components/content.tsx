@@ -14,12 +14,14 @@ export function Section({
   return (
     <section id={id} className="scroll-mt-24">
       {eyebrow ? (
-        <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[var(--accent-strong)]">
+        <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">{title}</h2>
-      <div className="mt-4 space-y-4">{children}</div>
+      <h2 className="mt-2.5 text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
+        {title}
+      </h2>
+      <div className="mt-5 space-y-4">{children}</div>
     </section>
   );
 }
@@ -29,20 +31,38 @@ export function Prose({ children }: { children: React.ReactNode }) {
 }
 
 export function CardGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+  return <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
 }
 
 export function Card({ title, body, step }: { title: string; body: string; step?: string }) {
   return (
-    <article className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--surface)] p-5">
+    <article className="hud group p-5 transition hover:border-[var(--border-lit)]">
       {step ? (
-        <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--accent-strong)]">
+        <p className="tnum text-2xl font-bold leading-none text-[var(--accent)] opacity-40 transition group-hover:opacity-100">
           {step}
         </p>
       ) : null}
-      <h3 className="mt-1.5 text-base font-bold text-white">{title}</h3>
+      <h3 className="mt-2 text-base font-bold uppercase tracking-[0.02em] text-white">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{body}</p>
     </article>
+  );
+}
+
+export function ChecklistGrid({ items }: { items: string[] }) {
+  return (
+    <ul className="grid gap-2 sm:grid-cols-2">
+      {items.map((item, index) => (
+        <li
+          key={item}
+          className="clip-btn flex items-start gap-3 border border-[var(--border)] bg-white/[0.03] px-4 py-3"
+        >
+          <span className="tnum shrink-0 text-xs font-bold text-[var(--accent)]">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="text-sm leading-6 text-white/85">{item}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -51,13 +71,13 @@ export function PlayCta({ label = "Start a draft" }: { label?: string }) {
     <div className="flex flex-wrap gap-2 pt-2">
       <Link
         href="/play"
-        className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-strong)]"
+        className="clip-btn display glow bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#04070d] transition hover:brightness-110"
       >
         {label}
       </Link>
       <Link
         href="/leaderboard"
-        className="rounded-full border border-[var(--border)] bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="clip-btn border border-[var(--border)] bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
       >
         See the Top 100
       </Link>
@@ -77,14 +97,16 @@ export function ContentPage({
   children: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
-      <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[var(--accent-strong)]">
+    <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-10">
+      <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
         {eyebrow}
       </p>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">{title}</h1>
-      <p className="mt-4 max-w-3xl text-[0.95rem] leading-7 text-[var(--muted)]">{intro}</p>
-      <div className="mt-10 space-y-12">{children}</div>
-      <div className="mt-12">
+      <h1 className="mt-3 text-3xl font-bold uppercase tracking-tight text-white sm:text-5xl">
+        {title}
+      </h1>
+      <p className="mt-5 max-w-3xl text-[0.95rem] leading-7 text-[var(--muted)]">{intro}</p>
+      <div className="mt-12 space-y-14">{children}</div>
+      <div className="mt-14">
         <PlayCta />
       </div>
     </main>

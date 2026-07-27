@@ -3,9 +3,11 @@
 import { formatPositions } from "@/lib/draft-utils";
 import type { Player, Position, Squad } from "@/lib/types";
 
-const groupOrder: Record<string, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3 };
+type Group = "GK" | "DEF" | "MID" | "ATT";
 
-const groupByPosition: Record<Position, keyof typeof groupOrder> = {
+const groupOrder: Record<Group, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3 };
+
+const groupOf: Record<Position, Group> = {
   GK: "GK",
   RB: "DEF",
   CB: "DEF",
@@ -22,12 +24,18 @@ const groupByPosition: Record<Position, keyof typeof groupOrder> = {
   ST: "ATT",
 };
 
+const groupAccent: Record<Group, string> = {
+  GK: "var(--amber)",
+  DEF: "var(--cyan)",
+  MID: "var(--accent)",
+  ATT: "var(--magenta)",
+};
+
 type SquadBoardProps = {
   squad: Squad | null;
   rerollsLeft: number;
   rolling: boolean;
   showRatings: boolean;
-  hasRolled: boolean;
   isPlayerAvailable: (player: Player) => boolean;
   onRoll: () => void;
   onReroll: (kind: "nation" | "year") => void;
@@ -39,7 +47,6 @@ export function SquadBoard({
   rerollsLeft,
   rolling,
   showRatings,
-  hasRolled,
   isPlayerAvailable,
   onRoll,
   onReroll,
@@ -47,13 +54,17 @@ export function SquadBoard({
 }: SquadBoardProps) {
   if (!squad) {
     return (
-      <section className="rounded-[1.25rem] border border-dashed border-[var(--border)] bg-black/20 p-8 text-center">
-        <p className="text-sm text-[var(--muted)]">Roll to draw a nation and World Cup year.</p>
+      <section className="hud hud-rule relative overflow-hidden p-8 text-center">
+        <div className="sweep pointer-events-none absolute inset-0" />
+        <p className="eyebrow">Draft zone</p>
+        <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+          Draw a nation and a World Cup year. One squad, one decision.
+        </p>
         <button
           type="button"
           onClick={onRoll}
           disabled={rolling}
-          className="mt-4 rounded-full bg-[var(--accent)] px-8 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--accent-strong)] disabled:opacity-60"
+          className="clip-btn display glow mt-5 bg-[var(--accent)] px-10 py-3.5 text-sm font-bold uppercase tracking-[0.2em] text-[#04070d] transition hover:brightness-110 disabled:opacity-50"
         >
           {rolling ? "Drawing…" : "Roll 🎲"}
         </button>
@@ -61,35 +72,35 @@ export function SquadBoard({
     );
   }
 
-  const sorted = [...squad.players].sort((left, right) => {
-    const groupDelta =
-      groupOrder[groupByPosition[left.positions[0]]] - groupOrder[groupByPosition[right.positions[0]]];
-    if (groupDelta !== 0) return groupDelta;
-    return left.number - right.number;
+  const sorted = [...squad.players].sort((a, b) => {
+    const delta = groupOrder[groupOf[a.positions[0]]] - groupOrder[groupOf[b.positions[0]]];
+    return delta !== 0 ? delta : a.number - b.number;
   });
 
   return (
-    <section className="rounded-[1.25rem] border border-[var(--border)] bg-black/25 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="hud hud-rule p-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Drawn</p>
-          <p className="mt-1 text-xl font-bold text-white">
-            <span className="mr-2">{squad.flag}</span>
+          <p className="eyebrow">Drawn</p>
+          <p className="display mt-1.5 flex items-center gap-2.5 text-2xl font-bold leading-none text-white">
+            <span className="text-3xl">{squad.flag}</span>
             {squad.nation}
           </p>
-          <p className="text-sm text-[var(--muted)]">World Cup {squad.year}</p>
+          <p className="tnum mt-1.5 text-sm font-semibold text-[var(--accent)]">
+            World Cup {squad.year}
+          </p>
         </div>
 
         <div className="text-right">
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-            Not convinced? Reroll · {rerollsLeft} left
+          <p className="eyebrow">
+            Reroll · <span className="tnum text-[var(--accent)]">{rerollsLeft}</span> left
           </p>
-          <div className="mt-2 flex flex-wrap justify-end gap-2">
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             <button
               type="button"
               onClick={() => onReroll("nation")}
               disabled={rerollsLeft <= 0 || rolling}
-              className="rounded-full border border-[var(--border)] bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
+              className="clip-btn border border-[var(--border)] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-35 disabled:hover:border-[var(--border)] disabled:hover:text-white"
             >
               ↺ Another nation
             </button>
@@ -97,7 +108,7 @@ export function SquadBoard({
               type="button"
               onClick={() => onReroll("year")}
               disabled={rerollsLeft <= 0 || rolling}
-              className="rounded-full border border-[var(--border)] bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
+              className="clip-btn border border-[var(--border)] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-35 disabled:hover:border-[var(--border)] disabled:hover:text-white"
             >
               ↺ Another World Cup
             </button>
@@ -105,40 +116,49 @@ export function SquadBoard({
         </div>
       </div>
 
-      <p className="mt-4 text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-        Pick a player
-      </p>
+      <p className="eyebrow mt-5">Pick a player</p>
 
-      <div className="mt-2 grid max-h-[26rem] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
+      <div className="scrollbar-thin mt-2.5 grid max-h-[27rem] grid-cols-2 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-3">
         {sorted.map((player) => {
           const available = isPlayerAvailable(player);
+          const accent = groupAccent[groupOf[player.positions[0]]];
 
           return (
             <button
               key={player.id}
               type="button"
               onClick={() => onPick(player)}
-              disabled={!available || !hasRolled}
-              className={`flex items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left transition ${
+              disabled={!available}
+              style={available ? { borderLeftColor: accent } : undefined}
+              className={`clip-btn flex items-stretch justify-between gap-2 border border-l-2 px-2.5 py-2 text-left transition ${
                 available
-                  ? "border-[rgba(255,107,53,0.32)] bg-[rgba(255,107,53,0.1)] text-white hover:bg-[rgba(255,107,53,0.2)]"
-                  : "cursor-not-allowed border-[var(--border)] bg-white/5 text-[var(--muted)] opacity-50"
+                  ? "border-[var(--border)] bg-white/[0.04] text-white hover:bg-white/[0.09]"
+                  : "cursor-not-allowed border-transparent bg-white/[0.02] text-[var(--muted)] opacity-45"
               }`}
             >
               <span className="min-w-0">
-                <span className="block text-[0.6rem] font-bold text-[var(--muted)]">#{player.number}</span>
-                <span className="block truncate text-sm font-semibold">{player.name}</span>
-                <span className="block text-[0.65rem] uppercase tracking-[0.1em] text-[var(--muted)]">
+                <span className="tnum block text-[0.6rem] font-bold text-[var(--muted)]">
+                  #{player.number}
+                </span>
+                <span className="block truncate text-sm font-semibold leading-tight">
+                  {player.name}
+                </span>
+                <span
+                  className="block text-[0.62rem] font-bold uppercase tracking-[0.08em]"
+                  style={{ color: available ? accent : undefined }}
+                >
                   {formatPositions(player)}
                 </span>
               </span>
-              <span className="shrink-0 text-base font-bold">{showRatings ? player.rating : "?"}</span>
+              <span className="tnum shrink-0 self-center text-lg font-bold">
+                {showRatings ? player.rating : "?"}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <p className="mt-3 text-xs text-[var(--muted)]">
+      <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
         One draw, one squad, one player. Taking a name ends this turn.
       </p>
     </section>

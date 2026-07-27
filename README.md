@@ -1,24 +1,43 @@
 # Draft XI
 
-A free browser game for World Cup fans. Roll a national team and a tournament year, draft one real
-player per turn into a formation, name a seven-man bench, and simulate the campaign to see how far
-your XI goes.
+A World Cup draft game for people who argue about lineups.
 
-## The game
+Roll a national team and a tournament year. Read the squad, take exactly one player, and watch the
+next draw hand you something completely different. Fill eleven slots, name a bench, and send them out
+to see how far they get.
 
-- **One draw, one squad, one player.** Each turn draws a nation and a World Cup year. You can read
-  the whole squad, but only one player joins your side.
-- **Eight formations.** 4-3-3, 4-4-2, 4-2-3-1, 4-2-4, 3-5-2, 5-3-2, 4-5-1, 3-4-3. The shape decides
-  which slots are open, and a player is only worth taking if he helps it.
-- **Three rerolls.** Reroll for another nation in the same tournament, or the same nation in a
-  different one.
-- **A manager's bench.** Seven substitute slots — reserve keeper, two defensive covers, two in
-  midfield, one attacker, and a free impact slot. Filling it raises your rating and lets you make
-  substitutions when fatigue hits in the knockout rounds.
-- **Styles and modes.** Defensive / Balanced / Attacking change how the campaign is scored. Classic
-  shows player ratings; Almanac hides them and turns the draft into a memory test.
-- **A seven-match campaign.** Three group games and four knockout rounds, scored on attack, defense,
-  balance, role fit, bench depth, and a little tournament luck.
+Play it at `/play`.
+
+---
+
+## How it plays
+
+**One draw, one squad, one player.** Each turn gives you a nation and a year — Brazil 1970, Cameroon
+1990, Morocco 2022, Spain 2026. You can read every name in the squad, but only one of them joins your
+side, and then the market closes. Every player you walk past is gone.
+
+**The formation is the whole problem.** Eight shapes, from a 4-2-4 that needs four forwards and
+forgives nothing at the back to a 5-3-2 that wants five defenders you will struggle to find. A player
+is only worth taking if he solves a slot you actually have open.
+
+**Three rerolls, and two ways to spend them.** Reroll for another nation in the same tournament, or
+the same nation in a different one. Use them when a squad cannot solve your open position, not when
+the names are unfamiliar.
+
+**A real bench.** Seven substitute slots, laid out the way a manager fills a matchday sheet: reserve
+keeper, two defensive covers, two in midfield, one attacker, one free impact slot. Each slot only
+accepts a player who can genuinely do that job. Naming a bench raises your rating and lets you make
+substitutions when legs go in the knockout rounds. Going without is a legitimate gamble — a strong XI
+with nobody to bring on wins the tournament about a fifth as often.
+
+**Then the campaign.** Three group games and four knockout rounds, scored on attack, defense, balance,
+role fit, bench depth, and some tournament luck. Level after 90 in a knockout goes to penalties,
+decided largely by your keeper. Fewer than four points in the group and you go home early.
+
+Two modes: **Classic** shows ratings, **Almanac** hides them and makes you draft on memory. Three
+styles: **Defensive**, **Balanced**, **Attacking**, which change how the campaign is weighted.
+
+---
 
 ## Running it
 
@@ -27,40 +46,62 @@ npm install
 npm run dev
 ```
 
-Then open <http://localhost:3000>. The draft lives at `/play`.
-
-| Command | Does |
+| Command | |
 | --- | --- |
-| `npm run dev` | Start the dev server |
+| `npm run dev` | Dev server on :3000 |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run check` | Validate the squad dataset and print simulation calibration |
 | `npm run db:seed` | Load the dataset into Postgres (needs `DATABASE_URL`) |
 
-## How it is put together
+`npm run check` is the useful one when you touch the data or the model. It catches duplicate shirt
+numbers, squads without a keeper, unfillable formation slots, and out-of-range attributes, then runs
+200 campaigns each for a strong and a weak XI so you can see whether the goal model still produces
+football scorelines.
 
-- **Next.js App Router + TypeScript + Tailwind.**
-- `src/lib/squads.ts` — the squad dataset. Players are written as compact tuples
-  (`[shirt, name, positions, rating]`) and per-position archetypes derive the attack, defense,
-  passing, and physical attributes, with overrides for players who were unusual for their role.
-- `src/lib/formations.ts` — formations as x/y slot coordinates, so every shape draws correctly on the
-  pitch, plus the bench slot definitions.
-- `src/lib/simulation.ts` — the campaign model. Deterministic: the same picks, formation, style, and
-  seed always produce the same result.
-- `src/lib/simulation-request.ts` — resolves client picks back to real dataset players, so scores are
-  always computed server-side from ids rather than trusted from the browser.
-- `src/app/api/*` — formations and bench setup, random squad draws, simulation, and the leaderboard.
-- Leaderboard submissions are re-simulated on the server and rate limited before they are stored.
-
-State is kept in a small file-backed store under `data/` by default. A Drizzle schema and seed script
-for Postgres live in `src/lib/db/` and `scripts/seed-db.ts` for when you want a real database — set
-`DATABASE_URL` and run `npm run db:seed`.
-
-Set `NEXT_PUBLIC_SITE_URL` in production so the canonical URLs, sitemap, and robots file point at the
+Set `NEXT_PUBLIC_SITE_URL` in production so canonical URLs, the sitemap, and robots.txt point at the
 right host.
+
+---
+
+## Layout
+
+```
+src/
+  app/            routes, API handlers, sitemap, robots
+  components/
+    draft/        the draft zone: pitch, bench, squad board, scorecard, result
+  content/        the guide copy shared by the landing page and the content routes
+  lib/
+    squads.ts     the dataset
+    formations.ts formations as x/y slot coordinates, plus the bench slots
+    simulation.ts the campaign model
+```
+
+A few things worth knowing before you change anything:
+
+**Squads are written as tuples.** `[shirt, name, positions, rating]`, with attack/defense/passing/
+physical derived from a per-position archetype. Override an attribute only where a player was
+genuinely unusual for their role — Beckenbauer's passing, Gérson's, Roberto Carlos's shooting. This
+keeps 559 players readable instead of a 4,000-line wall of objects.
+
+**Formations are coordinates, not rows.** Each slot carries an `x` (left to right) and `y` (own goal
+to opposition goal), so a 4-2-4 and a 4-5-1 both draw correctly without a lookup table of row counts.
+
+**The simulation is deterministic.** Same picks, formation, style, and seed, same campaign. That is
+what makes a result replayable and a leaderboard score verifiable.
+
+**Scores are never trusted from the browser.** The client sends player ids; the server resolves them
+back to real dataset entries, rejects anything invented, and recomputes the campaign itself. The
+leaderboard re-simulates every submission before storing it, and throttles per client.
+
+State lives in a small file-backed store under `data/` by default. There is a Drizzle schema and seed
+script in `src/lib/db/` and `scripts/` for when you want Postgres behind it instead.
+
+---
 
 ## Data
 
-The squad dataset is a curated historical selection covering World Cup squads from 1970 to 2026,
-built for gameplay rather than as a reference database. Ratings are judgement calls, not official
-numbers. Not affiliated with FIFA or any national association.
+The squad dataset is a curated historical selection covering World Cups from 1970 to 2026, built for
+gameplay rather than as a reference. Ratings are judgement calls. Not affiliated with FIFA or any
+national association.

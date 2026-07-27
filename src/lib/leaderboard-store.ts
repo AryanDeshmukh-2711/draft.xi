@@ -18,8 +18,8 @@ export type LeaderboardEntry = {
 
 const leaderboardFile = "leaderboard.json";
 
+// Overall first, campaign finish as the tie-break.
 function rank(entry: LeaderboardEntry) {
-  // Overall first, then the campaign itself as the tie-break.
   const finishBonus = entry.finish === "World Champions" ? 6 : entry.finish === "Runners-up" ? 3 : 0;
   return entry.overall * 10 + finishBonus;
 }
@@ -32,7 +32,6 @@ export async function listLeaderboardEntries(limit = 100) {
 export async function addLeaderboardEntry(entry: LeaderboardEntry) {
   const entries = await readJsonFile<LeaderboardEntry[]>(leaderboardFile, []);
   entries.unshift(entry);
-  // Keep the file bounded; the page only ever shows the top 100.
   await writeJsonFile(leaderboardFile, entries.slice(0, 1000));
   return entry;
 }
@@ -40,7 +39,6 @@ export async function addLeaderboardEntry(entry: LeaderboardEntry) {
 const submissionWindowMs = 20_000;
 const recentSubmissions = new Map<string, number>();
 
-/** Crude per-client throttle so the board cannot be spammed from one tab. */
 export function canSubmit(clientKey: string) {
   const now = Date.now();
   const last = recentSubmissions.get(clientKey) ?? 0;

@@ -29,11 +29,7 @@ export type ResolvedSelection = {
 
 const benchSlotIds = new Set(benchSlots.map((slot) => slot.id));
 
-/**
- * Rebuilds the picks from the dataset. Anything the client invented — an
- * unknown player, a slot that is not in the formation, a duplicate — is
- * rejected rather than scored.
- */
+/** Rebuild the picks from the dataset. Anything invented client-side is rejected. */
 export function resolveSimulationRequest(request: SimulationRequest): ResolvedSelection | { error: string } {
   const formation = getFormationById(request.formationId);
   if (!formation) return { error: "Unknown formation" };

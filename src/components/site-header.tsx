@@ -10,21 +10,23 @@ const links = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(7,17,29,0.86)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(4,7,13,0.82)] backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-[104rem] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-lg font-black tracking-tight text-white">DRAFT XI</span>
-          <span className="hidden text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--muted)] sm:inline">
-            World Cup draft
+        <Link href="/" className="group flex items-center gap-2.5">
+          <span className="clip-tag flex h-8 w-8 items-center justify-center bg-[var(--accent)] text-sm font-bold text-[#04070d] transition group-hover:brightness-110">
+            XI
+          </span>
+          <span className="display text-lg font-bold leading-none tracking-tight text-white">
+            DRAFT<span className="text-[var(--accent)]">.</span>XI
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-0.5 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--muted)] transition hover:bg-white/5 hover:text-white"
+              className="display px-3 py-1.5 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition hover:text-[var(--accent)]"
             >
               {link.label}
             </Link>
@@ -33,9 +35,9 @@ export function SiteHeader() {
 
         <Link
           href="/play"
-          className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-strong)]"
+          className="clip-btn display bg-[var(--accent)] px-5 py-2 text-[0.8rem] font-bold uppercase tracking-[0.12em] text-[#04070d] transition hover:brightness-110"
         >
-          Play now
+          Play
         </Link>
       </div>
     </header>

@@ -1,10 +1,12 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm";
-import { DATASET_VERSION } from "../src/lib/data/version";
 import { formations as formationSeed } from "../src/lib/formations";
 import { squads as squadSeed } from "../src/lib/squads";
 import * as schema from "../src/lib/db/schema";
+
+// Bump when the squad data changes so old results stay reproducible.
+const DATASET_VERSION = "1.0.0";
 
 async function main() {
   const connectionString = process.env.DATABASE_URL;

@@ -153,10 +153,7 @@ export const formations: Formation[] = [
   },
 ];
 
-/**
- * Seven substitutes, the way a tournament matchday bench is put together:
- * a reserve keeper, cover in every third of the pitch, and one free slot.
- */
+// A tournament matchday bench: reserve keeper, cover in each third, one free slot.
 export const benchSlots: BenchSlot[] = [
   { id: "bench-gk", role: "GK", label: "Reserve GK" },
   { id: "bench-def-1", role: "DEF", label: "Defensive cover" },

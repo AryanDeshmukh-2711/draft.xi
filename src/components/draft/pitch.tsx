@@ -21,9 +21,18 @@ export function Pitch({
   showRatings,
   onSelectSlot,
 }: PitchProps) {
+  const filled = formation.slots.filter((slot) => picks[slot.id]).length;
+
   return (
-    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.16)] bg-[linear-gradient(180deg,#1f6b3f_0%,#1a5d37_45%,#15522f_100%)] sm:aspect-[4/5]">
-      <PitchMarkings />
+    <div className="hud hud-lit relative aspect-[3/4] w-full overflow-hidden bg-[var(--pitch-turf)] sm:aspect-[4/5]">
+      <Turf />
+
+      <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2">
+        <span className="clip-tag bg-[var(--accent)] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#04070d]">
+          {formation.name}
+        </span>
+        <span className="tnum text-[0.7rem] font-bold text-[var(--accent)]">{filled}/11</span>
+      </div>
 
       {formation.slots.map((slot) => {
         const pick = picks[slot.id];
@@ -38,31 +47,36 @@ export function Pitch({
             aria-label={`${slot.position} slot${pick ? `, ${pick.player.name}` : ", open"}`}
             aria-pressed={isTarget}
             style={{ left: `${slot.x}%`, bottom: `${slot.y}%` }}
-            className={`absolute z-10 flex w-[19%] min-w-[52px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-center transition ${
-              isTarget
-                ? "bg-[rgba(255,107,53,0.28)] ring-2 ring-[var(--accent)]"
-                : isEligible
-                  ? "bg-[rgba(255,255,255,0.16)] ring-1 ring-[rgba(255,255,255,0.55)]"
-                  : "hover:bg-white/10"
-            }`}
+            className="absolute z-10 flex w-[19%] min-w-[54px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-1 px-0.5 py-1 text-center outline-none"
           >
             <span
-              className={`flex h-9 w-9 items-center justify-center rounded-full border text-[0.7rem] font-bold sm:h-11 sm:w-11 sm:text-sm ${
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full border text-[0.72rem] font-bold transition sm:h-12 sm:w-12 sm:text-sm ${
+                isTarget ? "slot-active" : ""
+              } ${
                 pick
-                  ? "border-white/70 bg-[rgba(6,20,12,0.85)] text-white"
-                  : "border-dashed border-white/55 bg-black/20 text-white/70"
+                  ? "border-[var(--accent)] bg-[rgba(0,224,138,0.16)] text-white shadow-[0_0_18px_-4px_var(--accent)]"
+                  : isTarget
+                    ? "border-[var(--accent)] bg-[rgba(0,224,138,0.1)] text-[var(--accent)]"
+                    : isEligible
+                      ? "border-[var(--cyan)] bg-[rgba(45,212,245,0.1)] text-[var(--cyan)]"
+                      : "border-dashed border-white/25 bg-black/40 text-white/45"
               }`}
             >
-              {pick ? pick.player.number : slot.position}
+              <span className="tnum">{pick ? pick.player.number : slot.position}</span>
             </span>
 
-            <span className="max-w-full truncate text-[0.6rem] font-semibold leading-tight text-white drop-shadow sm:text-[0.7rem]">
-              {pick ? surnameOf(pick.player.name) : "Open"}
+            <span
+              className={`max-w-full truncate text-[0.6rem] font-semibold uppercase leading-tight tracking-[0.04em] sm:text-[0.68rem] ${
+                pick ? "text-white" : "text-white/40"
+              }`}
+            >
+              {pick ? surnameOf(pick.player.name) : slot.position}
             </span>
 
             {pick ? (
-              <span className="text-[0.55rem] font-semibold text-white/80 sm:text-[0.65rem]">
-                {pick.squad.flag} {showRatings ? pick.player.rating : pick.squad.year}
+              <span className="flex items-center gap-1 text-[0.55rem] font-semibold text-[var(--accent)] sm:text-[0.62rem]">
+                <span>{pick.squad.flag}</span>
+                <span className="tnum">{showRatings ? pick.player.rating : pick.squad.year}</span>
               </span>
             ) : null}
           </button>
@@ -72,24 +86,30 @@ export function Pitch({
   );
 }
 
-function PitchMarkings() {
+function Turf() {
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden>
-      <div className="absolute inset-[3%] rounded-[0.75rem] border border-white/30" />
-      <div className="absolute left-[3%] right-[3%] top-1/2 h-px bg-white/30" />
-      <div className="absolute left-1/2 top-1/2 h-[16%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30" />
-      <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/50" />
-      <div className="absolute bottom-[3%] left-1/2 h-[15%] w-[52%] -translate-x-1/2 border-x border-t border-white/30" />
-      <div className="absolute bottom-[3%] left-1/2 h-[6%] w-[26%] -translate-x-1/2 border-x border-t border-white/30" />
-      <div className="absolute top-[3%] left-1/2 h-[15%] w-[52%] -translate-x-1/2 border-x border-b border-white/30" />
-      <div className="absolute top-[3%] left-1/2 h-[6%] w-[26%] -translate-x-1/2 border-x border-b border-white/30" />
+      {/* mown stripes */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-60"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(180deg, #ffffff 0 8%, transparent 8% 16%)",
+            "repeating-linear-gradient(180deg, rgba(0,224,138,0.05) 0 9%, transparent 9% 18%)",
         }}
       />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(4,7,13,0.85)_100%)]" />
+
+      <div className="absolute inset-[4%] border border-[var(--pitch-line)]" />
+      <div className="absolute left-[4%] right-[4%] top-1/2 h-px bg-[var(--pitch-line)]" />
+      <div className="absolute left-1/2 top-1/2 h-[15%] w-[21%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--pitch-line)]" />
+      <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent)]" />
+
+      <div className="absolute bottom-[4%] left-1/2 h-[14%] w-[50%] -translate-x-1/2 border-x border-t border-[var(--pitch-line)]" />
+      <div className="absolute bottom-[4%] left-1/2 h-[6%] w-[25%] -translate-x-1/2 border-x border-t border-[var(--pitch-line)]" />
+      <div className="absolute top-[4%] left-1/2 h-[14%] w-[50%] -translate-x-1/2 border-x border-b border-[var(--pitch-line)]" />
+      <div className="absolute top-[4%] left-1/2 h-[6%] w-[25%] -translate-x-1/2 border-x border-b border-[var(--pitch-line)]" />
+
+      <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(0,224,138,0.07),transparent)]" />
     </div>
   );
 }
