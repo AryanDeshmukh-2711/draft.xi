@@ -68,20 +68,44 @@ npm run dev
 | `npm run dev` | Dev server on :3000 |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
-| `npm run check` | Validate the squad dataset and the pitch shapes, and print simulation calibration |
+| `npm run check` | Validate the dataset and the pitch shapes, prove the app survives a read-only filesystem, and print simulation calibration |
 | `npm run db:seed` | Load the dataset into Postgres (needs `DATABASE_URL`) |
 
 `npm run check` is the useful one when you touch the data or the model. It catches duplicate shirt
 numbers, squads without a keeper, unfillable formation slots and out-of-range attributes, checks that
 all 24 formation/style shapes draw without a token clipping the touchline or landing on a team-mate,
-then runs a few hundred campaigns so you can see whether the goal, injury and style numbers still
-look like football.
+confirms a serverless host with no writable disk cannot break a draft, then runs a few hundred
+campaigns so you can see whether the goal, injury and style numbers still look like football.
 
 `npx tsx scripts/sample-campaign.ts [style] [benchSize]` prints example campaigns with their
 injuries and substitutions, which is the quickest way to sanity-check the match narration.
 
-Set `NEXT_PUBLIC_SITE_URL` in production so canonical URLs, the sitemap, and robots.txt point at the
-right host.
+---
+
+## Deploying
+
+The app is a stock Next.js project, so Vercel needs no configuration. Push to GitHub, then on
+[vercel.com/new](https://vercel.com/new) import the repository and deploy. Every later push to
+`master` redeploys automatically.
+
+Two environment variables are worth setting, in **Project → Settings → Environment Variables**:
+
+| Variable | |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Your public origin, e.g. `https://draft-xi.vercel.app`. Canonical URLs, the sitemap and robots.txt use it. |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Optional, and injected for you if you add a KV store from the Vercel marketplace. |
+
+**About that KV store.** Drafting and simulating need no database at all — the squad data ships with
+the code. But the leaderboard and the player rankings have to be written somewhere, and a serverless
+filesystem is read-only apart from a temp directory that is wiped on every cold start and is not
+shared between instances. Without a store the game plays perfectly and those two pages simply reset;
+both say so on the page rather than quietly losing your run. Add a KV store (Vercel KV, Upstash
+Redis, anything speaking the Upstash REST API) and they become permanent and shared, with no code
+change.
+
+`src/lib/server-json-store.ts` picks its backend at startup: KV if those variables exist, the local
+`data/` directory in development, otherwise the temp directory. Writes never throw, so a host that
+refuses them degrades instead of taking a draft down with it.
 
 ---
 

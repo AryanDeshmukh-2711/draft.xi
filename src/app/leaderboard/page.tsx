@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { StorageNotice } from "@/components/storage-notice";
 import { listLeaderboardEntries } from "@/lib/leaderboard-store";
 
 export const metadata: Metadata = {
@@ -28,6 +29,8 @@ export default async function LeaderboardPage() {
         Ranked by overall rating, with the campaign finish as the tie-break. Every score here was
         recomputed on the server from the picks themselves, so the board reflects real drafts.
       </p>
+
+      <StorageNotice />
 
       {entries.length === 0 ? (
         <div className="hud mt-10 p-12 text-center">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const links = [
+  { href: "/", label: "Home" },
   { href: "/how-to-play", label: "How to play" },
   { href: "/rules", label: "Rules" },
   { href: "/strategy", label: "Strategy" },
@@ -21,24 +22,19 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 md:flex">
+        {/* One scrollable row on a phone rather than three wrapped ones, so the
+            sticky header stays out of the way. */}
+        <nav className="scrollbar-thin -mr-1 flex min-w-0 flex-1 items-center justify-start gap-x-0.5 overflow-x-auto whitespace-nowrap pr-1 md:justify-end md:gap-x-1 md:overflow-visible">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="display px-3 py-1.5 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition hover:text-[var(--accent)]"
+              className="display shrink-0 px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition hover:text-[var(--accent)] md:px-3 md:text-[0.8rem]"
             >
               {link.label}
             </Link>
           ))}
         </nav>
-
-        <Link
-          href="/play"
-          className="clip-btn display bg-[var(--accent)] px-5 py-2 text-[0.8rem] font-bold uppercase tracking-[0.12em] text-[#04070d] transition hover:brightness-110"
-        >
-          Play
-        </Link>
       </div>
     </header>
   );

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "tsx scripts/check-dataset.ts && tsx scripts/check-shapes.ts",
+    "check": "tsx scripts/check-dataset.ts && tsx scripts/check-shapes.ts && tsx scripts/check-serverless.ts",
     "db:seed": "tsx scripts/seed-db.ts"
   },
   "dependencies": {

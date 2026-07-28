@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { StorageNotice } from "@/components/storage-notice";
 import { getTournamentCount, listPlayerRankings } from "@/lib/player-stats";
 import { squads } from "@/lib/squads";
 
@@ -36,6 +37,8 @@ export default async function PlayersPage() {
         rating adjustment that record has earned — it shows up next to a player&apos;s number while
         you draft.
       </p>
+
+      <StorageNotice />
 
       <div className="mt-8 flex flex-wrap gap-3">
         {[
