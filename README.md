@@ -1,12 +1,28 @@
 # Draft XI
 
-A World Cup draft game for people who argue about lineups.
+**A World Cup draft game for people who argue about lineups.**
+
+### ▶ [Play it now — draftxi-seven.vercel.app](https://draftxi-seven.vercel.app/play)
 
 Roll a national team and a tournament year. Read the squad, take exactly one player, and watch the
 next draw hand you something completely different. Fill eleven slots, name a bench, and send them out
 to see how far they get.
 
-Play it at `/play`.
+![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)
+![Deployed on Vercel](https://img.shields.io/badge/Deployed-Vercel-000?logo=vercel&logoColor=white)
+
+| | |
+| --- | --- |
+| **Live site** | <https://draftxi-seven.vercel.app> |
+| **Draft zone** | <https://draftxi-seven.vercel.app/play> |
+| **Player rankings** | <https://draftxi-seven.vercel.app/players> |
+| **Top 100 managers** | <https://draftxi-seven.vercel.app/leaderboard> |
+| **How to play** | <https://draftxi-seven.vercel.app/how-to-play> |
+
+**31 squads · 16 nations · 559 players · 1970 → 2026 · 8 formations · no sign-up**
 
 ---
 
@@ -84,9 +100,11 @@ injuries and substitutions, which is the quickest way to sanity-check the match 
 
 ## Deploying
 
-The app is a stock Next.js project, so Vercel needs no configuration. Push to GitHub, then on
-[vercel.com/new](https://vercel.com/new) import the repository and deploy. Every later push to
+Live at <https://draftxi-seven.vercel.app>, deployed from this repository on Vercel. Every push to
 `master` redeploys automatically.
+
+To run your own copy: the app is a stock Next.js project, so Vercel needs no configuration. Import
+the repository on [vercel.com/new](https://vercel.com/new) and deploy.
 
 Two environment variables are worth setting, in **Project → Settings → Environment Variables**:
 
