@@ -1,11 +1,11 @@
 # Draft XI
 
-**A World Cup draft game for people who argue about lineups.**
+**A World Cup draft game for people who argue about lineups.** 
 
 ### ▶ [Play it now — draftxi-seven.vercel.app](https://draftxi-seven.vercel.app/play)
 
 Roll a national team and a tournament year. Read the squad, take exactly one player, and watch the
-next draw hand you something completely different. Fill eleven slots, name a bench, and send them out
+next draw hand you something completely different. Fill eleven slots,  name a bench, and send them out
 to see how far they get.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=next.js&logoColor=white)
