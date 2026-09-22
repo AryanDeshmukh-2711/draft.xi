@@ -1,182 +1,291 @@
-# Draft XI
+<div align="center">
 
-**A World Cup draft game for people who argue about lineups.** 
+# ⚽ Draft XI
 
-### ▶ [Play it now — draftxi-seven.vercel.app](https://draftxi-seven.vercel.app/play)
+### A World Cup draft game for people who argue about lineups
 
-Roll a national team and a tournament year. Read the squad, take exactly one player, and watch the
-next draw hand you something completely different. Fill eleven slots,  name a bench, and send them out
-to see how far they get.
+**Roll a national squad from any World Cup since 1970, take one real player per turn,<br/>name a bench — then send your side out and see how far it gets.**
 
-![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)
-![Deployed on Vercel](https://img.shields.io/badge/Deployed-Vercel-000?logo=vercel&logoColor=white)
+<br/>
 
-| | |
-| --- | --- |
-| **Live site** | <https://draftxi-seven.vercel.app> |
-| **Draft zone** | <https://draftxi-seven.vercel.app/play> |
-| **Player rankings** | <https://draftxi-seven.vercel.app/players> |
-| **Top 100 managers** | <https://draftxi-seven.vercel.app/leaderboard> |
-| **How to play** | <https://draftxi-seven.vercel.app/how-to-play> |
+### ▶ [Play it now — no sign-up](https://draftxi-seven.vercel.app/play)
 
-**31 squads · 16 nations · 559 players · 1970 → 2026 · 8 formations · no sign-up**
+<br/>
+
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+<br/>
+![Vercel](https://img.shields.io/badge/Live_on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![Motion](https://img.shields.io/badge/Motion-animations-FF0055?style=for-the-badge) ![Zod](https://img.shields.io/badge/Zod-validated-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
+
+![Nations](https://img.shields.io/badge/nations-16-F0521F) ![Squads](https://img.shields.io/badge/squads-31-F0521F) ![Players](https://img.shields.io/badge/players-559-F0521F) ![Formations](https://img.shields.io/badge/formations-8-F0521F) ![Years](https://img.shields.io/badge/World_Cups-1970_→_2026-F0521F)
+
+</div>
 
 ---
 
-## How it plays
+## 👋 In 30 seconds
 
-**One draw, one squad, one player.** Each turn gives you a nation and a year — Brazil 1970, Cameroon
-1990, Morocco 2022, Spain 2026. You can read every name in the squad, but only one of them joins your
-side, and then the market closes. Every player you walk past is gone.
+<table>
+<tr>
+<td width="22%">
 
-**You place him yourself.** Selecting a player arms him and lights up every slot he can fill, on the
-pitch and on the bench. Nothing is committed until you choose one. Playing a centre-back in midfield
-is allowed — the game will let you, and the balance score will tell you what it cost.
+😟 **The problem**
 
-**The formation is the whole problem.** Eight shapes, from a 4-2-4 that needs four forwards and
-forgives nothing at the back to a 5-3-2 that wants five defenders you will struggle to find. A player
-is only worth taking if he solves a slot you actually have open.
+</td>
+<td>
 
-**Three rerolls, and two ways to spend them.** Reroll for another nation in the same tournament, or
-the same nation in a different one. Use them when a squad cannot solve your open position, not when
-the names are unfamiliar.
+Every football fan has an all-time XI in their head, and no way to prove it would actually win. Fantasy games are about this season's points, not about building a side across the history of the World Cup.
 
-**A real bench.** Seven substitute slots, laid out the way a manager fills a matchday sheet: reserve
-keeper, two defensive covers, two in midfield, one attacker, one free impact slot. Each slot only
-accepts a player who can genuinely do that job. Naming a bench raises your rating and lets you make
-substitutions when legs go in the knockout rounds. Going without is a legitimate gamble — a strong XI
-with nobody to bring on wins the tournament about a fifth as often.
+</td>
+</tr>
+<tr>
+<td width="22%">
 
-**Then the campaign.** Three group games and four knockout rounds, scored on attack, defense, balance,
-role fit, bench depth, and some tournament luck. Level after 90 in a knockout goes to penalties,
-decided largely by your keeper. Fewer than four points in the group and you go home early.
+💡 **The idea**
 
-**Injuries.** About one campaign in two loses a player, tired and less physical sides more often. If
-the bench holds someone who can actually play that position he comes on and the run continues; if it
-does not, the shape never recovers. A bench full of strikers will not cover an injured right-back.
+</td>
+<td>
 
-**And the players remember.** Every campaign updates the record of each player who took part —
-appearances, results, titles, and whether they started or came off the bench. That becomes ranking
-points on `/players`, plus a form figure (▲/▼) shown next to their rating the next time they turn up
-in a draw. Form is reputation, not a modifier: it changes what a player is worth to *you*, never what
-the simulation does with them, so campaigns stay reproducible and leaderboard scores stay verifiable.
+Each turn hands you a random squad — Brazil 1970, Cameroon 1990, Morocco 2022 — and you may take **one** player from it. Then the market closes. Fill eleven positions and a bench, and a match engine plays out the whole tournament.
 
-Two modes: **Classic** shows ratings, **Almanac** hides them and makes you draft on memory.
+</td>
+</tr>
+<tr>
+<td width="22%">
 
-Three styles: **Defensive**, **Balanced**, **Attacking**. They redraw the same eleven on the pitch —
-a deep, narrow block or a high, stretched line — and shift the goals at both ends: roughly 2.1–0.4 a
-match defensive against 2.6–0.8 attacking. Neither is stronger; they win about equally often.
+🎯 **Who it's for**
+
+</td>
+<td>
+
+Football fans who enjoy the argument. It plays in the browser in a few minutes, with no account.
+
+</td>
+</tr>
+<tr>
+<td width="22%">
+
+🚦 **Where it is**
+
+</td>
+<td>
+
+**Live** at [draftxi-seven.vercel.app](https://draftxi-seven.vercel.app), with player rankings and a top-100 leaderboard.
+
+</td>
+</tr>
+</table>
 
 ---
 
-## Running it
+## 🧭 How it plays
+
+```mermaid
+flowchart TB
+    subgraph R1[" "]
+        direction LR
+        A["🎲 Roll a nation<br/>and a year"] --> B["👀 Read the<br/>whole squad"] --> C["☝️ Take just<br/>one player"]
+    end
+    subgraph R2[" "]
+        direction LR
+        D["🧩 Fill 11 slots<br/>and a bench"] --> E["🏟️ Play the<br/>World Cup"] --> F["🏆 Climb the<br/>leaderboard"]
+    end
+    R1 --> R2
+
+    classDef step fill:#FFF1EB,stroke:#F0521F,stroke-width:2px,color:#431407
+    class A,B,C,D,E,F step
+    style R1 fill:none,stroke:none
+    style R2 fill:none,stroke:none
+```
+
+---
+
+## ✨ What makes it fun
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### ☝️ One draw, one player
+You can read every name in the squad, but only one joins your side. Every player you walk past is gone. Three rerolls let you swap the nation or the year when a squad can't fill the gap you have.
+
+</td>
+<td width="50%" valign="top">
+
+### 🧩 The formation is the puzzle
+Eight shapes, from a 4-2-4 that needs four forwards to a 5-3-2 that wants five defenders. A player is only worth taking if he fills a slot you actually have open.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🪑 A real bench
+Seven substitute slots, laid out like a matchday sheet. Each slot only accepts someone who can do that job — and when legs go in the knockouts, the bench decides whether your shape survives an injury.
+
+</td>
+<td valign="top">
+
+### 🏟️ A full tournament
+Three group games and four knockout rounds, scored on attack, defence, balance, role fit and bench depth. Level after 90 minutes in a knockout goes to penalties, decided largely by your keeper.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 📈 Players remember
+Every campaign updates each player's record — appearances, results and titles — which becomes their ranking and a ▲/▼ form figure the next time they turn up in a draw.
+
+</td>
+<td valign="top">
+
+### 🎛️ Your way to play
+**Classic** shows ratings; **Almanac** hides them and makes you draft from memory. Three styles — defensive, balanced, attacking — change how the same eleven line up and how many goals go in at both ends.
+
+</td>
+</tr>
+</table>
+
+In the game's own test runs, a strong XI **with** a full bench won the tournament 58 times in 200; the same XI with **no** bench won it 5 times. The bench is not decoration.
+
+---
+
+## 📮 How one campaign is scored — fairly
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You as 👤 You
+    participant Game as ⚽ Draft zone
+    participant Server as 🖥️ Server
+    participant Board as 🏆 Leaderboard
+
+    You->>Game: Draft 11 + bench
+    Game->>Server: Player ids, formation,<br/>style and seed
+    Note over Server: Looks up every id in<br/>the real dataset
+    Note over Server: Replays the whole<br/>campaign itself
+    Server-->>Game: The same result,<br/>every time
+    Server->>Board: The score it<br/>worked out itself
+    Board-->>You: Your rank
+```
+
+The browser never gets to say what score it earned. The server rebuilds the side from real player ids and replays the campaign itself, which is why every score on the leaderboard can be checked.
+
+---
+
+## 🏗️ How it's built
+
+```mermaid
+flowchart LR
+    Browser["📱 Browser<br/>draft zone"] --> App["▲ Next.js on Vercel<br/>pages + API routes"]
+    App --> Engine["⚙️ Match engine<br/>deterministic"]
+    App --> Data[("📚 Squad dataset<br/>ships with the code")]
+    App --> Store[("💾 KV store<br/>leaderboard & rankings")]
+
+    classDef app fill:#FFF1EB,stroke:#F0521F,stroke-width:2px,color:#431407
+    classDef store fill:#EEF2FF,stroke:#6366F1,stroke-width:2px,color:#1E1B4B
+    class Browser,App,Engine app
+    class Data,Store store
+```
+
+| Layer | Tool | Why this one |
+|---|---|---|
+| 🖥️ Website | **Next.js 16 + React 19 + TypeScript** | Pages and the server API in one project |
+| 🎨 Look and feel | **Tailwind CSS 4 + Motion** | Quick, consistent styling and smooth animation |
+| ✅ Validation | **Zod** | Every draft sent to the server is checked before it's trusted |
+| 💾 Storage | **Vercel KV / Upstash** *(optional)* | Makes the leaderboard permanent; without it the game still plays perfectly |
+| ☁️ Hosting | **Vercel** | Every push to `master` redeploys the live site |
+
+Drafting and simulating need no database at all — the squads ship with the code. Only the leaderboard and player rankings are saved, and there's a Drizzle schema ready if they ever move to Postgres.
+
+---
+
+## 🛡️ Built to be trusted
+
+| | What it means | How it's done |
+|---|---|---|
+| 🎯 | **Same draft, same result** | The simulation is deterministic: the same picks, formation, style and seed always replay the same campaign. |
+| 🔒 | **Scores can't be faked** | The server resolves every player id against the real dataset, rejects anything invented, and re-simulates before storing a score. |
+| 🔁 | **No double counting** | Recording a campaign is keyed on the draft itself, so a refresh or a double click can't inflate anyone's ranking. |
+| 🧱 | **Never breaks on a read-only server** | If saving fails, the game carries on and says so on the page, rather than taking the draft down with it. |
+| 🎞️ | **Animation never blocks the game** | No screen waits on an animation, so a background tab can't leave the board stuck. |
+
+`npm run check` proves the data and the model on demand:
+
+```mermaid
+flowchart LR
+    D["📚 Dataset<br/>559 players checked"] --> S["📐 Pitch shapes<br/>24 checked"] --> R["💾 Read-only<br/>disk survived"] --> C["📊 Hundreds of<br/>test campaigns"]
+    classDef ok fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    class D,S,R,C ok
+```
+
+It catches duplicate shirt numbers, squads without a keeper, formation slots no one can fill and out-of-range ratings — then plays hundreds of campaigns so you can see the goals, injuries and styles still look like football.
+
+---
+
+<a name="roadmap"></a>
+
+## 🗺️ What's live
+
+| Status | Feature |
+|:---:|---|
+| ✅ | The draft: 16 nations, 31 squads, 559 players, World Cups from 1970 to 2026 |
+| ✅ | Eight formations, three styles, a seven-slot bench and three rerolls |
+| ✅ | A full tournament with penalties, injuries and substitutions |
+| ✅ | Classic and Almanac modes |
+| ✅ | Player rankings with form, and a top-100 leaderboard with server-checked scores |
+| ✅ | Live on Vercel, redeployed on every push |
+
+---
+
+## 📁 What's in this repository
+
+```
+📦 Draft XI
+├── 📂 src/
+│   ├── app/          the pages (play, players, leaderboard, rules…) and the API
+│   ├── components/   the draft zone: squad board, pitch, bench, scorecard
+│   ├── content/      the guide text shared by the landing page and help pages
+│   └── lib/          the dataset, formations, the match engine and player records
+├── 📂 scripts/       the checks, calibration and sample campaigns
+└── 📂 docs/          the full developer guide
+```
+
+---
+
+## 👩‍💻 For developers
+
+You need **Node.js** (current LTS).
 
 ```bash
 npm install
+```
+
+```bash
 npm run dev
 ```
 
-| Command | |
-| --- | --- |
-| `npm run dev` | Dev server on :3000 |
-| `npm run build` | Production build |
-| `npm run lint` | ESLint |
-| `npm run check` | Validate the dataset and the pitch shapes, prove the app survives a read-only filesystem, and print simulation calibration |
-| `npm run db:seed` | Load the dataset into Postgres (needs `DATABASE_URL`) |
+Then open <http://localhost:3000>. Before changing the data or the match engine, run:
 
-`npm run check` is the useful one when you touch the data or the model. It catches duplicate shirt
-numbers, squads without a keeper, unfillable formation slots and out-of-range attributes, checks that
-all 24 formation/style shapes draw without a token clipping the touchline or landing on a team-mate,
-confirms a serverless host with no writable disk cannot break a draft, then runs a few hundred
-campaigns so you can see whether the goal, injury and style numbers still look like football.
-
-`npx tsx scripts/sample-campaign.ts [style] [benchSize]` prints example campaigns with their
-injuries and substitutions, which is the quickest way to sanity-check the match narration.
-
----
-
-## Deploying
-
-Live at <https://draftxi-seven.vercel.app>, deployed from this repository on Vercel. Every push to
-`master` redeploys automatically.
-
-To run your own copy: the app is a stock Next.js project, so Vercel needs no configuration. Import
-the repository on [vercel.com/new](https://vercel.com/new) and deploy.
-
-Two environment variables are worth setting, in **Project → Settings → Environment Variables**:
-
-| Variable | |
-| --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Your public origin, e.g. `https://draft-xi.vercel.app`. Canonical URLs, the sitemap and robots.txt use it. |
-| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Optional, and injected for you if you add a KV store from the Vercel marketplace. |
-
-**About that KV store.** Drafting and simulating need no database at all — the squad data ships with
-the code. But the leaderboard and the player rankings have to be written somewhere, and a serverless
-filesystem is read-only apart from a temp directory that is wiped on every cold start and is not
-shared between instances. Without a store the game plays perfectly and those two pages simply reset;
-both say so on the page rather than quietly losing your run. Add a KV store (Vercel KV, Upstash
-Redis, anything speaking the Upstash REST API) and they become permanent and shared, with no code
-change.
-
-`src/lib/server-json-store.ts` picks its backend at startup: KV if those variables exist, the local
-`data/` directory in development, otherwise the temp directory. Writes never throw, so a host that
-refuses them degrades instead of taking a draft down with it.
-
----
-
-## Layout
-
-```
-src/
-  app/              routes, API handlers, sitemap, robots
-  components/
-    motion.tsx      Reveal / StaggerList / CountUp animation primitives
-    draft/          the draft zone: phase bar, squad board, pitch, bench,
-                    scorecard, result panel
-  content/          the guide copy shared by the landing page and content routes
-  lib/
-    squads.ts       the dataset
-    formations.ts   formations as x/y slot coordinates, plus the bench slots
-    simulation.ts   the campaign model
-    player-stats.ts the per-player record that feeds /players
+```bash
+npm run check
 ```
 
-A few things worth knowing before you change anything:
+**The full developer guide is in [`docs/DEVELOPER-GUIDE.md`](docs/DEVELOPER-GUIDE.md):**
 
-**Squads are written as tuples.** `[shirt, name, positions, rating]`, with attack/defense/passing/
-physical derived from a per-position archetype. Override an attribute only where a player was
-genuinely unusual for their role — Beckenbauer's passing, Gérson's, Roberto Carlos's shooting. This
-keeps 559 players readable instead of a 4,000-line wall of objects.
+| Topic | Jump to |
+|---|---|
+| ⚽ Every rule of the game | [How it plays](docs/DEVELOPER-GUIDE.md#how-it-plays) |
+| 🚀 Commands and checks | [Running it](docs/DEVELOPER-GUIDE.md#running-it) |
+| ☁️ Your own copy on Vercel | [Deploying](docs/DEVELOPER-GUIDE.md#deploying) |
+| 🗂️ Where things live, and the rules the code follows | [Layout](docs/DEVELOPER-GUIDE.md#layout) |
 
-**Formations are coordinates, not rows.** Each slot carries an `x` (left to right) and `y` (own goal
-to opposition goal), so a 4-2-4 and a 4-5-1 both draw correctly without a lookup table of row counts.
-
-**The simulation is deterministic.** Same picks, formation, style, and seed, same campaign. That is
-what makes a result replayable and a leaderboard score verifiable.
-
-**Scores are never trusted from the browser.** The client sends player ids; the server resolves them
-back to real dataset entries, rejects anything invented, and recomputes the campaign itself. The
-leaderboard re-simulates every submission before storing it, and throttles per client.
-
-**Recording a campaign is idempotent.** `player-stats.ts` derives a run id from the picks, formation,
-style and seed, so re-simulating the same draft — a refresh, a double click — cannot inflate anyone's
-ranking.
-
-**Animation must never gate content.** `AnimatePresence mode="wait"` is deliberately avoided in the
-draft: a backgrounded tab stops firing animation frames, and waiting on an exit animation would leave
-the board stuck. For the same reason `CountUp` starts at its target value and is only wound back to
-animate, so an interrupted count still leaves the correct number on screen.
-
-State lives in a small file-backed store under `data/` by default. There is a Drizzle schema and seed
-script in `src/lib/db/` and `scripts/` for when you want Postgres behind it instead.
+The squad data is a curated selection built for gameplay, and ratings are judgement calls. Not affiliated with FIFA or any national association.
 
 ---
 
-## Data
+<div align="center">
 
-The squad dataset is a curated historical selection covering World Cups from 1970 to 2026, built for
-gameplay rather than as a reference. Ratings are judgement calls. Not affiliated with FIFA or any
-national association.
+**Built by [Aryan Deshmukh](https://github.com/AryanDeshmukh-2711)** · [Play Draft XI](https://draftxi-seven.vercel.app/play)
+
+</div>
